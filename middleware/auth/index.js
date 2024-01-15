@@ -10,10 +10,16 @@ var _checkRole = (req, roles) => {
 
 const _checkToken = async (req, isCheckStatus, isCheckForgotPassToken) => {
     try {
+        console.log("inside _checkToken 1st")
         const token = req.headers.authorization || req.body.token;
-        if (token) {
+        const refresh_token = req.headers.authorization || req.body.refresh_token;
+        
+        if (token || refresh_token) {
+            
             const authUtilityInst = new AuthUtility();
-            const user = await authUtilityInst.getUserByToken(token, isCheckStatus, isCheckForgotPassToken);
+            
+            const user = await authUtilityInst.getUserByToken(token,refresh_token, isCheckStatus, isCheckForgotPassToken);
+          
             return user;
         }
         throw new errors.Unauthorized();
@@ -71,8 +77,14 @@ module.exports = {
 
     async checkTokenForAccountActivation(req, res, next) {
         try {
+            console.log("inside checkTokenForAccountActivation 1st")
             const user = await _checkToken(req, false, true);
+            console.log("inside checkTokenForAccountActivation 1st")
             req.authUser = user;
+            console.log("value recived by checkTokenForAccountActivation value ==>")
+            console.timeLog(user)
+            console.log("inside checkTokenForAccountActivation return value is ==>")
+            console.log(req.authUser)
             return next();
         } catch (err) {
             console.log(err);

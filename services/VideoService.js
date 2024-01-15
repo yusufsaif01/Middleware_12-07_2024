@@ -13,6 +13,7 @@ const config = require("../config");
 const VideoResponseMapper = require("../dataModels/responseMapper/VideoResponseMapper");
 const LoginUtility = require("../db/utilities/LoginUtility");
 const FootPlayerUtility = require("../db/utilities/FootPlayerUtility");
+const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
 const PostType = require("../constants/PostType");
 const FootPlayerStatus = require("../constants/FootPlayerStatus");
 const _ = require("lodash");
@@ -27,6 +28,7 @@ module.exports = class VideoService {
   constructor() {
     this.videoQueueService = new VideoQueueService();
     this.connectionUtilityInst = new ConnectionUtility();
+    this.clubacademyutility = new ClubAcademyUtility();
   }
 
   async uploadVideo(authUser, type, { tags, media, others }) {
@@ -311,18 +313,29 @@ return count
   async getVideosList({ query, pagination }) {
     try {
       const skipCount = (pagination.page_no - 1) * pagination.limit;
-      const options = { limit: pagination.limit, skip: skipCount };
-      let connection = await this.connectionUtilityInst.findOne({ user_id: query.user_id }, { followings: 1 });
-      console.log("connection lists inside getVideosList")
-      console.log(connection)
-
+      const options = {limit: pagination.limit, skip: skipCount };
+      console.log("query is ===>")
+      console.log(query)
       let user_id_array = [query.user_id];
+      if(query.post_type!=='timeline'){
+      let connection = await this.connectionUtilityInst.findOne({ user_id: query.user_id }, { followings: 1 });
+      console.log("connection is =>")
+      console.log(connection)
+     
+      //let user_id_array = [query.user_id];
+
+      console.log("1st user id array")
+      console.log(user_id_array)
+
       if (connection && connection.followings) {
           user_id_array = user_id_array.concat(connection.followings);
-          console.log("request after concatination")
-          console.log(user_id_array)
+        console.log("2nd user id array")
+        console.log(user_id_array)
+        //let connection = await this.connectionUtilityInst.findOne({ user_id: query.user_id }, { followings: 1 });
       }
-
+    }
+    console.log("final user id array is")
+    console.log(user_id_array)
       const $where = await this.listMatchCriteria(query,user_id_array);
 
       $where["is_deleted"] = false;

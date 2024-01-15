@@ -6,6 +6,13 @@
         "env": "JWT_SECRET",
         "arg": "jwt_secret"
     },
+    "jwt_secret_refresh": {
+        "doc": "JWT Refresh secret for signed token",
+        "format": "String",
+        "default": "yftchain_refresh",
+        "env": "JWT_SECRET_REFRESH",
+        "arg": "jwt_secret_refresh"
+    },
 
     "expiry_in" : {
         "doc": "expiry time for signed token",

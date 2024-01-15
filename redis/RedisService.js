@@ -29,7 +29,7 @@ class RedisService {
     async getUserFromCacheByKey(key) {
         try {
             let result = await client.getAsync(key);
-         
+        
             result = JSON.parse(result)
         
             return result;
@@ -43,6 +43,8 @@ class RedisService {
     getUserIdFromCacheByKey(key) {
         try {
             let result = client.getAsync(key);
+            
+           
             return result;
         }
         catch (e) {

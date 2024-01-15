@@ -105,6 +105,7 @@ ecipientAddress = "yusufsaif0@gmail.com"
                 member_type: userData.member_type,
                 forgot_password_token: tokenForAccountActivation
             });
+            console.log(loginDetails._id)
             userData.login_details = loginDetails._id;
 
             if (userData.member_type == MEMBER.PLAYER) {

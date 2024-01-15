@@ -21,10 +21,7 @@ class BaseUtility {
 
 			projection = (!_.isEmpty(projection)) ? projection : { "_id": 0, "__v": 0 };
 		
-			console.log("options are")
-			console.log(options)
-			console.log("projections are")
-			console.log(projection)
+		
 			let result = await this.model.findOne(conditions, projection, options).lean();
 			return result;
 		} catch (e) {
@@ -77,6 +74,11 @@ class BaseUtility {
 			if (_.isEmpty(this.model)) {
 				await this.getModel();
 			}
+			console.log("model name is ===>+++")
+			console.log(await this.model.modelName);
+
+			console.log("data before insert is ===>+++")
+			console.log(await this.model.modelName);
 			let result = await this.model.create(record);
 			return result;
 		} catch (e) {
@@ -107,8 +109,12 @@ class BaseUtility {
 				await this.getModel();
 			}
 			conditions.deleted_at = { $exists: false };
+			console.log("Condition is =>>>")
+			console.log(conditions)
+			console.log("updateedDoc is =>>>")
+			console.log(updatedDoc)
 			
-			let result = await this.model.updateMany(conditions, updatedDoc, options);
+			let result = await this.model.update(conditions, updatedDoc, options);
 			return result;
 		} catch (e) {
 			console.log(`Error in updateMany() while updating data for ${this.schemaObj.schemaName} :: ${e}`);
@@ -174,8 +180,7 @@ class BaseUtility {
 			if (_.isEmpty(this.model)) {
 				await this.getModel();
 			}
-			console.log("Aggregation are --->")
-			console.log(aggregations)
+			
 			const data = await this.model.aggregate(aggregations)
 			return data;
 		} catch (e) {

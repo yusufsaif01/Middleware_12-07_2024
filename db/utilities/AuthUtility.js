@@ -26,7 +26,7 @@ class AuthUtility {
             id,
             email,
             member_type
-        }), config.jwt.jwt_secret, config.jwt.expiry_in);
+        }), config.jwt.jwt_secret, config.jwt.jwt_secret_refresh, config.jwt.expiry_in);
     }
 
     randomBytes(len = 20) {
@@ -47,25 +47,32 @@ class AuthUtility {
         return Promise.resolve(isMatched);
     }
 
-    signWithJWT(string, secretKey, expiry) {
+    signWithJWT(string, secretKey, refresh_secretKey, expiry) {
         return new Promise((resolve, reject) => {
             let data = JSON.parse(string);
-            jwt.sign(data, secretKey, { expiresIn: expiry }, (err, token) => {
+            jwt.sign(data, secretKey, { expiresIn: "7d" }, (err, token) => {
                 if (err) {
                     return reject(err);
                 }
                 return resolve(token);
             });
+          //  jwt.sign(data, refresh_secretKey, { expiresIn: "5h" }, (err, refresh_token) => {
+          //      if (err) {
+          //          return reject(err);
+          //      }
+           //     return resolve(refresh_token);
+          //  });
         });
     }
 
-    jwtVerification(token, secretKey) {
-     console.log("inside jwtVerification")
+    jwtVerification(token, secretKey, refresh_token) {
+     
         return new Promise((resolve, reject) => {
             return jwt.verify(token.split(' ')[1], secretKey, function (err, data) {
                 if (err) {
-                    console.log(err)
+                  
                     return reject(new errors.InvalidToken());
+                 // return window.location.href = "/refresh-token";
                 }
 
                 return resolve(data);
@@ -73,12 +80,14 @@ class AuthUtility {
         })
     }
 
-    async getUserByToken(token, isCheckStatus, isCheckForgotPassToken) {
+    async getUserByToken(token,refresh_token, isCheckStatus, isCheckForgotPassToken) {
         try {
-            console.log("inside getuser by token")
+            
             token = token.split(' ')[1];
             let user_id = isCheckForgotPassToken ? await redisServiceInst.getUserIdFromCacheByKey(`keyForForgotPassword${token}`) : await redisServiceInst.getUserIdFromCacheByKey(token);
+        
             if (!user_id) {
+               
                 return Promise.reject(new errors.InvalidToken());
             }
             let user = await redisServiceInst.getUserFromCacheByKey(user_id);
@@ -94,9 +103,12 @@ class AuthUtility {
                 }
 
                 if (isCheckForgotPassToken) {
+                   
                     if (user.forgot_password_token) {
+
                         const fpt = 'Bearer ' + user.forgot_password_token
-                        const fptUser = await this.jwtVerification(fpt, config.jwt.jwt_secret);
+                        
+                        const fptUser = await this.jwtVerification(fpt, config.jwt.jwt_secret,config.jwt.jwt_secret_refresh);
                         if (user.user_id !== fptUser.id)
                             throw new errors.Unauthorized(RESPONSE_MESSAGE.USER_AUTHENTICATION_FAILED);
                     } else {

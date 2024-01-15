@@ -44,6 +44,11 @@ module.exports = (router) => {
 		const serviceInst = new UserRegistrationService();
 		responseHandler(req, res, serviceInst.memberRegistration(req.body));
 	});
+
+	router.post('/refresh-token', function (req, res) {
+		console.log("register api hits")
+		
+	});
 	/**
 	 * @api {post} /login login
 	 * @apiName Login

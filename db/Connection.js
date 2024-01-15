@@ -24,7 +24,7 @@ class Connection {
 			let options = this.config.options || {};
 			options.useNewUrlParser = true;
 			options.promiseLibrary = Promise;
-			let hostURL = "mongodb://dyt-mongodb:68OtZYS0mzwnhtuWKL5xBS5x35npFzyPvUEgrnBkekT6vvdRmMb2K8boGQljU3Vmjm5sSIulzCFmACDbBdiWOg%3D%3D@dyt-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&maxIdleTimeMS=120000&appName=@dyt-mongodb@";
+			let hostURL = "mongodb://dyt-mongodb:68OtZYS0mzwnhtuWKL5xBS5x35npFzyPvUEgrnBkekT6vvdRmMb2K8boGQljU3Vmjm5sSIulzCFmACDbBdiWOg%3D%3D@dyt-mongodb.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=true&maxIdleTimeMS=120000&appName=@dyt-mongodb@";
 			if(this.config.is_auth_enable) {
 				hostURL = `${this.config.db_user}:${this.config.db_pass}@${hostURL}`;
 			}

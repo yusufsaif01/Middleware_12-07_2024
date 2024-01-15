@@ -33,7 +33,6 @@
 		"env": "APP_CLIENT_URLS",
 		"arg": "app_client_urls"
 	},
-   
 	"facebook_url": {
         "doc": "provide default facebook url",
         "format": "String",
