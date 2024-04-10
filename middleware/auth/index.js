@@ -1,6 +1,8 @@
 const errors = require('../../errors');
 const AuthUtility = require('../../db/utilities/AuthUtility');
 const redisServiceInst = require('../../redis/RedisService')
+
+
 var _checkRole = (req, roles) => {
     if (!req.authUser || !req.authUser.role) {
         return false;
@@ -11,20 +13,27 @@ var _checkRole = (req, roles) => {
 const _checkToken = async (req, isCheckStatus, isCheckForgotPassToken) => {
     try {
         console.log("inside _checkToken 1st")
+     
         const token = req.headers.authorization || req.body.token;
         const refresh_token = req.headers.authorization || req.body.refresh_token;
         
+
+        console.log("token");
+        console.log(token)
+        console.log("refresh token");
+        console.log(refresh_token)
         if (token || refresh_token) {
             
             const authUtilityInst = new AuthUtility();
             
             const user = await authUtilityInst.getUserByToken(token,refresh_token, isCheckStatus, isCheckForgotPassToken);
-          
+            
             return user;
         }
         throw new errors.Unauthorized();
 
     } catch (err) {
+        console.log("inside catch error")
         console.log(err);
         return Promise.reject(err);
     }
@@ -44,6 +53,8 @@ module.exports = {
     async checkAuthToken(req, res, next) {
         try {
             const user = await _checkToken(req, true, false);
+        
+
             req.authUser = user;
             return next();
         } catch (err) {
@@ -77,16 +88,15 @@ module.exports = {
 
     async checkTokenForAccountActivation(req, res, next) {
         try {
-            console.log("inside checkTokenForAccountActivation 1st")
+            
             const user = await _checkToken(req, false, true);
-            console.log("inside checkTokenForAccountActivation 1st")
+           
             req.authUser = user;
-            console.log("value recived by checkTokenForAccountActivation value ==>")
-            console.timeLog(user)
-            console.log("inside checkTokenForAccountActivation return value is ==>")
-            console.log(req.authUser)
+          
             return next();
         } catch (err) {
+            console.log("inside checkauth0000")
+            //console.log(req)
             console.log(err);
             return next(err);
         }

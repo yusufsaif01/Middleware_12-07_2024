@@ -26,7 +26,7 @@ const EmploymentContractUtility = require("../db/utilities/EmploymentContractUti
 const PROFILE_DETAIL = require('../constants/ProfileDetailType');
 const userValidator = require("../middleware/validators").userValidator;
 const UserRegistrationService = require('./UserRegistrationService');
-
+const axios = require('axios')
 /**
  *
  *
@@ -60,18 +60,18 @@ class UserProfileService {
      */
 
     async updateProfileDetails(requestedData = {}) {
-        await this.updateProfileDetailsValidation(requestedData.updateValues, requestedData.member_type, requestedData.id);
-        let profileData = await this.prepareProfileData(requestedData.member_type, requestedData.updateValues);
-        if (requestedData.updateValues._category === PROFILE_DETAIL.DOCUMENT) {
-            profileData = await this.manageDocuments(profileData, requestedData.member_type, requestedData.id);
-        }
-        if (requestedData.member_type == MEMBER.PLAYER) {
-            await this.playerUtilityInst.updateOne({ 'user_id': requestedData.id }, profileData);
-        } else {
-            await this.clubAcademyUtilityInst.updateOne({ 'user_id': requestedData.id }, profileData);
-        }
+     axios
+       .put(
+         "http://yftchain.local/registration/in/update-details/:_category",
+         requestedData
+       )
+       .then(function (response) {
+         console.log(response);
+       })
+       .catch(function (error) {
+         console.log(error);
+       });
     }
-
 
     /**
      * validates document number
@@ -358,6 +358,12 @@ class UserProfileService {
 
     async updateProfileDetailsValidation(data, member_type, user_id) {
         const { founded_in, trophies, contact_person, top_signings, _category } = data
+        console.log("recive data value is =>")
+        console.log(data)
+        console.log("member type is =>")
+        console.log(member_type)
+        console.log("user_id is")
+        console.log(user_id)
         if (founded_in) {
             let msg = null;
             let d = new Date();
@@ -403,14 +409,19 @@ class UserProfileService {
         if (top_signings) {
             await userValidator.topSigningsValidation({ top_signings: top_signings });
         }
-        if (data.profileStatus && member_type === MEMBER.PLAYER && _category === PROFILE_DETAIL.PERSONAL) {
-            if (data.profileStatus === PROFILE_STATUS.VERIFIED && data.dob) {
-                return Promise.reject(new errors.ValidationFailed(RESPONSE_MESSAGE.DOB_CANNOT_BE_EDITED));
-            }
-            if (data.profileStatus != PROFILE_STATUS.VERIFIED && !data.dob) {
-                return Promise.reject(new errors.ValidationFailed(RESPONSE_MESSAGE.DOB_REQUIRED));
-            }
-        }
+        console.log(
+          data.profileStatus &&
+            member_type === MEMBER.PLAYER &&
+            _category === PROFILE_DETAIL.PERSONAL
+        );
+      //  if (data.profileStatus && member_type === MEMBER.PLAYER && _category === PROFILE_DETAIL.PERSONAL) {
+         //   if (data.profileStatus === PROFILE_STATUS.VERIFIED && data.dob) {
+       //         return Promise.reject(new errors.ValidationFailed(RESPONSE_MESSAGE.DOB_CANNOT_BE_EDITED));
+      //      }
+        //    if (data.profileStatus != PROFILE_STATUS.VERIFIED && !data.dob) {
+               // return Promise.reject(new errors.ValidationFailed(RESPONSE_MESSAGE.DOB_REQUIRED));
+           // }
+      //  }
         return Promise.resolve()
     }
 

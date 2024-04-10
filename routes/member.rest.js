@@ -64,7 +64,7 @@ module.exports = (router) => {
     router.get('/member/public/profile/:user_id', checkAuthToken, function (req, res) {
         try {
             let serviceInst = new UserService();
-            responseHandler(req, res, serviceInst.getPublicProfileDetails({ sent_by: req.authUser.user_id, user_id: req.params.user_id }))
+         responseHandler(req, res, serviceInst.getPublicProfileDetails({ sent_by: req.authUser.user_id, user_id: req.params.user_id }))
         } catch (e) {
             console.log(e);
             responseHandler(req, res, Promise.reject(e));
@@ -600,7 +600,7 @@ module.exports = (router) => {
         let filter = {
             search: (req.query && req.query.search) ? req.query.search : null
         };
-        
+       
         let serviceInst = new UserService();
         responseHandler(req, res, serviceInst.getMemberList({ filter, paginationOptions }));
     });

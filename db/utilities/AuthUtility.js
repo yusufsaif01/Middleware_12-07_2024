@@ -8,6 +8,8 @@ const LoginUtility = require("./LoginUtility");
 const ACCOUNT = require("../../constants/AccountStatus")
 const RESPONSE_MESSAGE = require("../../constants/ResponseMessage")
 const redisServiceInst = require("../../redis/RedisService")
+const AfterLinkExpireService = require('../.././services/AfterLinkExpireService');
+//const LoginUtility = require('../db/utilities/LoginUtility');
 
 class AuthUtility {
 
@@ -47,7 +49,7 @@ class AuthUtility {
         return Promise.resolve(isMatched);
     }
 
-    signWithJWT(string, secretKey, refresh_secretKey, expiry) {
+    signWithJWT(string, secretKey, expiry) {
         return new Promise((resolve, reject) => {
             let data = JSON.parse(string);
             jwt.sign(data, secretKey, { expiresIn: "7d" }, (err, token) => {
@@ -70,9 +72,13 @@ class AuthUtility {
         return new Promise((resolve, reject) => {
             return jwt.verify(token.split(' ')[1], secretKey, function (err, data) {
                 if (err) {
-                  
-                    return reject(new errors.InvalidToken());
-                 // return window.location.href = "/refresh-token";
+               
+                  const TokenArray = token.split(" ");
+                  const stringData=TokenArray[1]
+                  const AfterLinkExpireServiceInst = new AfterLinkExpireService();
+                  AfterLinkExpireServiceInst.afterlinkexpire(stringData);
+                  return reject(new errors.InvalidToken());
+                  // return window.location.href = "/refresh-token";
                 }
 
                 return resolve(data);
@@ -82,12 +88,12 @@ class AuthUtility {
 
     async getUserByToken(token,refresh_token, isCheckStatus, isCheckForgotPassToken) {
         try {
-            
+            console.log("inside getUserToken===>")
             token = token.split(' ')[1];
             let user_id = isCheckForgotPassToken ? await redisServiceInst.getUserIdFromCacheByKey(`keyForForgotPassword${token}`) : await redisServiceInst.getUserIdFromCacheByKey(token);
         
             if (!user_id) {
-               
+               console.log("inside !user_id")
                 return Promise.reject(new errors.InvalidToken());
             }
             let user = await redisServiceInst.getUserFromCacheByKey(user_id);
@@ -107,19 +113,23 @@ class AuthUtility {
                     if (user.forgot_password_token) {
 
                         const fpt = 'Bearer ' + user.forgot_password_token
-                        
-                        const fptUser = await this.jwtVerification(fpt, config.jwt.jwt_secret,config.jwt.jwt_secret_refresh);
+                        console.log("before ftpuserrrrrrrrrrrrrrrr")
+                        const fptUser = await this.jwtVerification(fpt, config.jwt.jwt_secret);
+                        console.log("after ftpuserrrrrrrrrrrrrrrr")
                         if (user.user_id !== fptUser.id)
                             throw new errors.Unauthorized(RESPONSE_MESSAGE.USER_AUTHENTICATION_FAILED);
                     } else {
+                        console.log("inside 33333333333")
                         throw new errors.LinkExpired(RESPONSE_MESSAGE.LINK_EXPIRED);
                     }
                 }
                 return user;
             } else {
+                console.log("inside else111")
                 throw new errors.Unauthorized();
             }
         } catch (e) {
+            console.log("inside catch 6665555566")
             console.log(e);
             return Promise.reject(e);
         }

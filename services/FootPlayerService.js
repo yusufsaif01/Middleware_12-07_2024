@@ -41,8 +41,11 @@ class FootPlayerService {
    */
   async footplayerSearch(requestedData = {}) {
     try {
-    
+      console.log("request data is ====>")
+      console.log(requestedData)
       let filterConditions = this._preparePlayerFilterCondition(requestedData.filterConditions)
+      console.log("filter condition recived is")
+      console.log(filterConditions)
       let data = await this.loginUtilityInst.aggregate([{ $match: { is_deleted: false, member_type: MEMBER.PLAYER } },
       { $project: { user_id: 1, profile_status: 1, _id: 0 } }, { "$lookup": { "from": "player_details", "localField": "user_id", "foreignField": "user_id", "as": "player_detail" } }, { $unwind: { path: "$player_detail" } },
       { $project: { player_detail: { user_id: 1, email: 1, first_name: 1, last_name: 1, is_verified: { $cond: { if: { $eq: ["$profile_status.status", PROFILE_STATUS.VERIFIED] }, then: true, else: false } }, position: 1, member_type: MEMBER.PLAYER, player_type: 1, avatar_url: 1, phone: 1 } } },
@@ -96,8 +99,8 @@ class FootPlayerService {
       if (filterConditions.phone) {
         filterArr.push({ "player_detail.phone": filterConditions.phone })
       }
-      if (filterConditions.first_name) {
-        filterArr.push({ "player_detail.phone": filterConditions.first_name })
+      if (filterConditions.name) {
+        filterArr.push({ "player_detail.first_name": filterConditions.name })
       }
       condition = {
         $and: filterArr

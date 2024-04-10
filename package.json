@@ -15,6 +15,7 @@
     "@hapi/joi": "^15.1.1",
     "@vimeo/vimeo": "^3.0.0",
     "aws-sdk": "^2.524.0",
+    "axios": "^1.6.5",
     "bcrypt": "^5.1.0",
     "bluebird": "^3.5.5",
     "convict": "^5.1.0",

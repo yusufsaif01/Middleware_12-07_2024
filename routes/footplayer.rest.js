@@ -60,9 +60,8 @@ module.exports = (router) => {
             email: (req.query && req.query.email) ? req.query.email : null,
             phone: (req.query && req.query.phone) ? req.query.phone : null,
         }
-        
-       
-      
+      console.log("request query is ==>")
+      console.log(req.query)
         let serviceInst = new FootPlayerService();
         return responseHandler(req, res, serviceInst.footplayerSearch({ filterConditions, user_id: req.authUser.user_id }));
     });

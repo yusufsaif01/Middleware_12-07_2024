@@ -23,10 +23,12 @@ const moment = require("moment");
 class UserValidator {
 
     async createAPIValidation(req, res, next) {
+        console.log(req.body)
+        console.log("inside createAPIValidation");
         let registerRule = {
             
             "phone": Joi.string().allow(""),
-            
+            "country_code":Joi.string().allow(""),
             // required().
             // regex(/^[0-9]{10}$/).
             // error(
@@ -38,7 +40,7 @@ class UserValidator {
             //     )
             // ),
             
-            "member_type": Joi.string().valid(MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY).required(),
+            "member_type": Joi.string().valid(MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY,MEMBER.COACHE).required(),
             "type": Joi.when("member_type", {
                 is: MEMBER.PLAYER,
                 then: Joi.string().allow(""),

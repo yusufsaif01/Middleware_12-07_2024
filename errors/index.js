@@ -9,7 +9,9 @@ const nameIt = (name, cls) => ({[name] : class extends cls {
         this.message = msg || errors[name].message;
         this.code = errors[name].code;
         this.httpCode = errors[name].httpCode;
+       
         if (data) {
+            console.log("inside error file")
             this.data = data;
         }
     }
