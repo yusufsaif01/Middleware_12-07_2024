@@ -26,70 +26,88 @@ class UserValidator {
         console.log(req.body)
         console.log("inside createAPIValidation");
         let registerRule = {
-            
-            "phone": Joi.string().allow(""),
-            "country_code":Joi.string().allow(""),
-            // required().
-            // regex(/^[0-9]{10}$/).
-            // error(
-            //     customMessage(
-            //         {
-            //             "any.required": RESPONSE_MESSAGE.PHONE_REQUIRED,
-            //         },
-            //         // RESPONSE_MESSAGE.PHONE_NUMBER_INVALID
-            //     )
-            // ),
-            
-            "member_type": Joi.string().valid(MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY,MEMBER.COACHE).required(),
-            "type": Joi.when("member_type", {
-                is: MEMBER.PLAYER,
-                then: Joi.string().allow(""),
-                otherwise: Joi.string().valid(TYPE.RESIDENTIAL, TYPE.NON_RESIDENTIAL).required()
-            }),
-            "name": Joi.when("member_type", {
-                is: MEMBER.PLAYER,
-                then: Joi.string().allow(""),
-                otherwise: Joi.string().min(1).required().regex(/^(?:[0-9]+[ a-zA-Z]|[a-zA-Z])[a-zA-Z0-9 ]*$/).error(
-                    customMessage(
-                        {
-                            "any.required": RESPONSE_MESSAGE.NAME_REQUIRED,
-                        },
-                        RESPONSE_MESSAGE.NAME_INVALID
-                    )
-                )
-            }),
-            "first_name": Joi.when("member_type", {
-                is: MEMBER.PLAYER,
-                then: Joi.string().min(1).required().regex(/^(?:[0-9]+[ a-zA-Z]|[a-zA-Z])[a-zA-Z0-9 ]*$/).error(
-                    customMessage(
-                        {
-                            "any.required": RESPONSE_MESSAGE.FIRST_NAME_REQUIRED,
-                        },
-                        RESPONSE_MESSAGE.FIRST_NAME_INVALID
-                    )
-                ),
-                otherwise: Joi.string().allow(""),
-            }),
-            "last_name": Joi.when("member_type", {
-                is: MEMBER.PLAYER,
-                then: Joi.string().min(1).required().regex(/^(?:[0-9]+[ a-zA-Z]|[a-zA-Z])[a-zA-Z0-9 ]*$/).error(
-                    customMessage(
-                        {
-                            "any.required": RESPONSE_MESSAGE.LAST_NAME_REQUIRED,
-                        },
-                        RESPONSE_MESSAGE.LAST_NAME_INVALID
-                    )
-                ),
-                otherwise: Joi.string().allow(""),
-            }),
-            "email": Joi.string().email({ minDomainSegments: 2 }).required(),
-            "dob": Joi.when("member_type", {
-                is: MEMBER.PLAYER,
-                then: Joi.date().iso().required().max(moment().format("YYYY-MM-DD")),
-                otherwise: Joi.date(),
-            }),
-            "termsAccepted": Joi.boolean().required()
+          phone: Joi.string().allow(""),
+          country_code: Joi.string().allow(""),
+          // required().
+          // regex(/^[0-9]{10}$/).
+          // error(
+          //     customMessage(
+          //         {
+          //             "any.required": RESPONSE_MESSAGE.PHONE_REQUIRED,
+          //         },
+          //         // RESPONSE_MESSAGE.PHONE_NUMBER_INVALID
+          //     )
+          // ),
 
+          member_type: Joi.string()
+            .valid(MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.COACHE)
+            .required(),
+          type: Joi.when("member_type", {
+            is: [MEMBER.PLAYER, MEMBER.COACHE],
+            then: Joi.string().allow(""),
+            otherwise: Joi.string()
+              .valid(TYPE.RESIDENTIAL, TYPE.NON_RESIDENTIAL)
+              .required(),
+          }),
+
+          name: Joi.when("member_type", {
+            is: [MEMBER.PLAYER, MEMBER.COACHE],
+            then: Joi.string().allow(""),
+            otherwise: Joi.string()
+              .min(1)
+              .required()
+              .regex(/^(?:[0-9]+[ a-zA-Z]|[a-zA-Z])[a-zA-Z0-9 ]*$/)
+              .error(
+                customMessage(
+                  {
+                    "any.required": RESPONSE_MESSAGE.NAME_REQUIRED,
+                  },
+                  RESPONSE_MESSAGE.NAME_INVALID
+                )
+              ),
+          }),
+          first_name: Joi.when("member_type", {
+            is: [MEMBER.PLAYER, MEMBER.COACHE],
+            then: Joi.string()
+              .min(1)
+              .required()
+              .regex(/^(?:[0-9]+[ a-zA-Z]|[a-zA-Z])[a-zA-Z0-9 ]*$/)
+              .error(
+                customMessage(
+                  {
+                    "any.required": RESPONSE_MESSAGE.FIRST_NAME_REQUIRED,
+                  },
+                  RESPONSE_MESSAGE.FIRST_NAME_INVALID
+                )
+              ),
+            otherwise: Joi.string().allow(""),
+          }),
+          last_name: Joi.when("member_type", {
+            is: [MEMBER.PLAYER, MEMBER.COACHE],
+            then: Joi.string()
+              .min(1)
+              .required()
+              .regex(/^(?:[0-9]+[ a-zA-Z]|[a-zA-Z])[a-zA-Z0-9 ]*$/)
+              .error(
+                customMessage(
+                  {
+                    "any.required": RESPONSE_MESSAGE.LAST_NAME_REQUIRED,
+                  },
+                  RESPONSE_MESSAGE.LAST_NAME_INVALID
+                )
+              ),
+            otherwise: Joi.string().allow(""),
+          }),
+          email: Joi.string().email({ minDomainSegments: 2 }).required(),
+          dob: Joi.when("member_type", {
+            is: [MEMBER.PLAYER, MEMBER.COACHE],
+            then: Joi.date()
+              .iso()
+              .required()
+              .max(moment().format("YYYY-MM-DD")),
+            otherwise: Joi.date(),
+          }),
+          termsAccepted: Joi.boolean().required(),
         };
 
         if (req.body.type && req.body.member_type) {

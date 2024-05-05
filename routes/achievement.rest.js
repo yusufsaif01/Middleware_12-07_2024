@@ -1,4 +1,5 @@
 const AchievementService = require('../services/AchievementService');
+const TraningCenterService = require("../services/CreateTraningCenterService");
 const responseHandler = require('../ResponseHandler');
 const { checkAuthToken } = require('../middleware/auth');
 const achievementValidator = require("../middleware/validators").achievementValidator;
@@ -101,19 +102,64 @@ module.exports = (router) => {
  * 
  */
 
-    router.get('/achievement/list', checkAuthToken, function (req, res) {
+    router.get("/traning/center_list/:user_id", checkAuthToken, function (req, res) {
         let paginationOptions = {};
-
-        paginationOptions = {
-            page_no: (req.query && req.query.page_no) ? req.query.page_no : 1,
-            limit: (req.query && req.query.page_size) ? Number(req.query.page_size) : 10
-        };
-
-        let serviceInst = new AchievementService();
-        responseHandler(req, res, serviceInst.getList({
-            paginationOptions, user_id: req.authUser.user_id
-        }));
+         paginationOptions = {
+           page_no: req.query && req.query.page_no ? req.query.page_no : 1,
+           limit:
+             req.query && req.query.page_size
+               ? Number(req.query.page_size)
+               : 10,
+         };
+        let serviceInst = new TraningCenterService();
+        responseHandler(
+          req,
+          res,
+          serviceInst.getList({
+            paginationOptions,
+            user_id: req.authUser.user_id,
+          })
+        );
     });
+
+ router.delete("/traning-center/:id", checkAuthToken, function (req, res) {
+   try {
+     let serviceInst = new TraningCenterService();
+     responseHandler(
+       req,
+       res,
+       serviceInst.delete({
+         id: req.params.id,
+         user_id: req.authUser.user_id,
+       })
+     );
+   } catch (e) {
+     console.log(e);
+     responseHandler(req, res, Promise.reject(e));
+   }
+ });
+
+    router.get("/achievement/list", checkAuthToken, function (req, res) {
+         let paginationOptions = {};
+
+         paginationOptions = {
+           page_no: req.query && req.query.page_no ? req.query.page_no : 1,
+           limit:
+             req.query && req.query.page_size
+               ? Number(req.query.page_size)
+               : 10,
+         };
+
+         let serviceInst = new AchievementService();
+         responseHandler(
+           req,
+           res,
+           serviceInst.getList({
+             paginationOptions,
+             user_id: req.authUser.user_id,
+           })
+         );
+       });
     /**
  * @api {post} /achievement/add add achievement
  * @apiName add achievement

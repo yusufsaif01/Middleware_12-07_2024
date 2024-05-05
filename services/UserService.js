@@ -1,6 +1,7 @@
 const Promise = require("bluebird");
 const errors = require("../errors");
 const PlayerUtility = require("../db/utilities/PlayerUtility");
+const CoacheUtility = require("../db/utilities/CoacheUtility");
 const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
 const AuthUtility = require("../db/utilities/AuthUtility");
 const LoginUtility = require("../db/utilities/LoginUtility");
@@ -26,6 +27,7 @@ class UserService extends BaseService {
   constructor() {
     super();
     this.playerUtilityInst = new PlayerUtility();
+    this.coacheUtilityInst = new CoacheUtility();
     this.clubAcademyUtilityInst = new ClubAcademyUtility();
     this.achievementUtilityInst = new AchievementUtility();
     this.connectionUtilityInst = new ConnectionUtility();
@@ -336,21 +338,20 @@ class UserService extends BaseService {
   async getDetails(requestedData = {}) {
     try {
       let user = requestedData.user;
-      console.log("request befor send")
-      console.log(requestedData)
+    
       if (requestedData._category == "personal_details") {
-        console.log("inside axios ")
+        
         const axiosrcivedata = await axios.get(
           `http://yftchain.local/registration/in/profile/:_category/${user.user_id}`
         );
-        console.log("return data in yft-middleware is=>")
-        console.log(axiosrcivedata.data.data);
+      
         return axiosrcivedata.data.data;
       } else {
         
         let loginDetails = await this.loginUtilityInst.findOne({
           user_id: user.user_id,
         });
+      
         if (loginDetails) {
           if (!loginDetails.is_email_verified) {
             return responseHandler(
@@ -367,6 +368,11 @@ class UserService extends BaseService {
           projection = await this.getProfileProjection(requestedData._category);
           if (loginDetails.member_type == MEMBER.PLAYER) {
             data = await this.playerUtilityInst.findOne(
+              { user_id: user.user_id },
+              projection
+            );
+          } else if (loginDetails.member_type == MEMBER.COACHE) {
+            data = await this.coacheUtilityInst.findOne(
               { user_id: user.user_id },
               projection
             );
@@ -465,8 +471,7 @@ class UserService extends BaseService {
         
       );
         if (!_.isEmpty(response)) {
-          console.log("memver api data is")
-          console.log(response.data.data)
+       
           return Promise.resolve(response.data.data);
         } else {
           return Promise.reject(

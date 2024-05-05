@@ -88,12 +88,12 @@ class AuthUtility {
 
     async getUserByToken(token,refresh_token, isCheckStatus, isCheckForgotPassToken) {
         try {
-            console.log("inside getUserToken===>")
+            
             token = token.split(' ')[1];
             let user_id = isCheckForgotPassToken ? await redisServiceInst.getUserIdFromCacheByKey(`keyForForgotPassword${token}`) : await redisServiceInst.getUserIdFromCacheByKey(token);
         
             if (!user_id) {
-               console.log("inside !user_id")
+               
                 return Promise.reject(new errors.InvalidToken());
             }
             let user = await redisServiceInst.getUserFromCacheByKey(user_id);
@@ -113,24 +113,23 @@ class AuthUtility {
                     if (user.forgot_password_token) {
 
                         const fpt = 'Bearer ' + user.forgot_password_token
-                        console.log("before ftpuserrrrrrrrrrrrrrrr")
+                        
                         const fptUser = await this.jwtVerification(fpt, config.jwt.jwt_secret);
-                        console.log("after ftpuserrrrrrrrrrrrrrrr")
+                       
                         if (user.user_id !== fptUser.id)
                             throw new errors.Unauthorized(RESPONSE_MESSAGE.USER_AUTHENTICATION_FAILED);
                     } else {
-                        console.log("inside 33333333333")
+                       
                         throw new errors.LinkExpired(RESPONSE_MESSAGE.LINK_EXPIRED);
                     }
                 }
                 return user;
             } else {
-                console.log("inside else111")
+                
                 throw new errors.Unauthorized();
             }
         } catch (e) {
-            console.log("inside catch 6665555566")
-            console.log(e);
+          
             return Promise.reject(e);
         }
     }

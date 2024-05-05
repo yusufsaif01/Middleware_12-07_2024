@@ -186,7 +186,9 @@ class ConnectionService {
 
     async acceptFootMateRequest(requestedData = {}) {
         try {
+            console.log("000000000000")
             let sent_by = await this.footMateRequestValidator(requestedData);
+            console.log("111111111")
             let updatedDoc = { status: CONNECTION_REQUEST.ACCEPTED, is_deleted: true, deleted_at: Date.now() };
             let condition = { $or: [{ sent_by: requestedData.user_id, send_to: sent_by, is_deleted: false }, { sent_by: sent_by, send_to: requestedData.user_id, is_deleted: false }] };
 
@@ -217,7 +219,11 @@ class ConnectionService {
     }
 
     async footMateRequestValidator(requestedData = {}) {
+        console.log("topppppppp")
+        console.log(requestedData);
         let footMateRequest = await this.connectionRequestUtilityInst.findOne({ status: CONNECTION_REQUEST.PENDING, request_id: requestedData.request_id, send_to: requestedData.user_id });
+        console.log("bottommmm");
+        console.log(footMateRequest);
         if (_.isEmpty(footMateRequest)) {
             return Promise.reject(new errors.NotFound(RESPONSE_MESSAGE.FOOTMATE_REQUEST_NOT_FOUND));
         }

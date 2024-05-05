@@ -1,5 +1,6 @@
 const userValidator = require("../middleware/validators").userValidator;
 const UserRegistrationService = require("../services/UserRegistrationService");
+const CreateTraningCenterService = require("../services/CreateTraningCenterService");
 const {
   checkAuthToken,
   checkTokenForAccountActivation,
@@ -53,6 +54,31 @@ module.exports = (router) => {
     }
   );
 
+  // for  create traning center
+
+
+      router.post(
+        "/create_traning_center",
+        checkAuthToken,
+        function (req, res) {
+             const serviceInst = new CreateTraningCenterService();
+             responseHandler(
+               req,
+               res,
+               serviceInst.createTraningCenter(req.body)
+             );
+        }
+      );
+  
+  
+     router.get("/coache/list/:id", checkAuthToken, function (req, res) {
+       const serviceInst = new CreateTraningCenterService();
+       responseHandler(
+         req,
+         res,
+         serviceInst.getCoacheList(req.params.id)
+       );
+     });
   /**
    * @api {post} /login login
    * @apiName Login

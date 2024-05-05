@@ -12,16 +12,11 @@ var _checkRole = (req, roles) => {
 
 const _checkToken = async (req, isCheckStatus, isCheckForgotPassToken) => {
     try {
-        console.log("inside _checkToken 1st")
+       
      
         const token = req.headers.authorization || req.body.token;
         const refresh_token = req.headers.authorization || req.body.refresh_token;
         
-
-        console.log("token");
-        console.log(token)
-        console.log("refresh token");
-        console.log(refresh_token)
         if (token || refresh_token) {
             
             const authUtilityInst = new AuthUtility();
@@ -33,8 +28,7 @@ const _checkToken = async (req, isCheckStatus, isCheckForgotPassToken) => {
         throw new errors.Unauthorized();
 
     } catch (err) {
-        console.log("inside catch error")
-        console.log(err);
+       
         return Promise.reject(err);
     }
 };
@@ -43,6 +37,7 @@ module.exports = {
     checkRole(roles) {
         roles = Array.isArray(roles) ? roles : [roles];
         return (req, res, next) => {
+         
             if (!_checkRole(req, roles)) {
                 return next(new errors.Unauthorized());
             }
@@ -53,8 +48,6 @@ module.exports = {
     async checkAuthToken(req, res, next) {
         try {
             const user = await _checkToken(req, true, false);
-        
-
             req.authUser = user;
             return next();
         } catch (err) {

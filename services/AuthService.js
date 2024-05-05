@@ -6,6 +6,7 @@ const AuthUtility = require('../db/utilities/AuthUtility');
 const ClubAcademyUtility = require('../db/utilities/ClubAcademyUtility');
 const AdminUtility = require('../db/utilities/AdminUtility');
 const PlayerUtility = require('../db/utilities/PlayerUtility');
+const CoacheUtility = require("../db/utilities/CoacheUtility");
 const LoginUtility = require('../db/utilities/LoginUtility');
 const LoginUtilityReplica = require('../db/utilities/LoginUtilityReplic');
 const ActivityUtility = require('../db/utilities/ActivityUtility');
@@ -26,6 +27,7 @@ class AuthService {
         this.authUtilityInst = new AuthUtility();
         this.adminUtilityInst = new AdminUtility();
         this.playerUtilityInst = new PlayerUtility();
+        this.coacheUtilityInst = new CoacheUtility();
         this.loginUtilityInst = new LoginUtility();
         this.activityUtilityInst = new ActivityUtility();
         this.clubAcademyUtilityInst = new ClubAcademyUtility();
@@ -54,24 +56,40 @@ class AuthService {
         try {
             await this.loginValidator(email, password);
             const loginDetails = await this.findByCredentials(email, password);
+            console.log("loginDetails is",loginDetails)
            // console.log("request also come here in AuthService !!!!!!!!!!!!!!!!!!!!!!!")
             ActivityService.loginActivity(loginDetails.user_id, ACTIVITY.LOGIN);
             const tokenForAuthentication = await this.authUtilityInst.getAuthToken(loginDetails.user_id, email, loginDetails.member_type);
             await this.loginUtilityInst.updateOne({ user_id: loginDetails.user_id }, { token: tokenForAuthentication });
             let avatarUrl = "";
             if (loginDetails.member_type === MEMBER.PLAYER) {
-                const { avatar_url } = await this.playerUtilityInst.findOne({ user_id: loginDetails.user_id }, { avatar_url: 1 })
-                avatarUrl = avatar_url
-            }
-            else if (loginDetails.role === ROLE.ADMIN) {
-                const { avatar_url } = await this.adminUtilityInst.findOne({ user_id: loginDetails.user_id }, { avatar_url: 1 })
-                avatarUrl = avatar_url
-            }
-            else {
-                const { avatar_url } = await this.clubAcademyUtilityInst.findOne({ user_id: loginDetails.user_id }, { avatar_url: 1 })
-                avatarUrl = avatar_url
+              const { avatar_url } = await this.playerUtilityInst.findOne(
+                { user_id: loginDetails.user_id },
+                { avatar_url: 1 }
+              );
+              avatarUrl = avatar_url;
+            } else if (loginDetails.member_type === MEMBER.COACHE) {
+              const { avatar_url } = await this.coacheUtilityInst.findOne(
+                { user_id: loginDetails.user_id },
+                { avatar_url: 1 }
+              );
+              avatarUrl = avatar_url;
+            } else if (loginDetails.role === ROLE.ADMIN) {
+              const { avatar_url } = await this.adminUtilityInst.findOne(
+                { user_id: loginDetails.user_id },
+                { avatar_url: 1 }
+              );
+              avatarUrl = avatar_url;
+            } else {
+              const { avatar_url } = await this.clubAcademyUtilityInst.findOne(
+                { user_id: loginDetails.user_id },
+                { avatar_url: 1 }
+              );
+              avatarUrl = avatar_url;
             }
             await redisServiceInst.setUserCache(tokenForAuthentication, { ...loginDetails, avatar_url: avatarUrl })
+            console.log("before return")
+            console.log(loginDetails)
             return { ...loginDetails, avatar_url: avatarUrl, token: tokenForAuthentication };
         } catch (e) {
             console.log(e);

@@ -1,4 +1,5 @@
 const FootPlayerService = require('../services/FootPlayerService');
+
 const responseHandler = require('../ResponseHandler');
 const { checkAuthToken, checkRole } = require('../middleware/auth');
 const footplayerValidator = require("../middleware/validators").footplayerValidator;
@@ -65,6 +66,32 @@ module.exports = (router) => {
         let serviceInst = new FootPlayerService();
         return responseHandler(req, res, serviceInst.footplayerSearch({ filterConditions, user_id: req.authUser.user_id }));
     });
+  
+     router.get(
+       "/coache/search",
+       checkAuthToken,
+       checkRole([ROLE.CLUB, ROLE.ACADEMY]),
+       footplayerValidator.footplayerSearchQueryValidation,
+       function (req, res) {
+         filterConditions = {
+           name: req.query && req.query.name ? req.query.name : null,
+           email: req.query && req.query.email ? req.query.email : null,
+           phone: req.query && req.query.phone ? req.query.phone : null,
+         };
+         console.log("request query is ==>");
+         console.log(req.query);
+         let serviceInst = new FootPlayerService();
+         return responseHandler(
+           req,
+           res,
+           serviceInst.coacheSearch({
+             filterConditions,
+             user_id: req.authUser.user_id,
+           })
+         );
+       }
+     );
+
 
     /**
      * @api {post} /footplayer/request send footplayer request
@@ -125,11 +152,25 @@ module.exports = (router) => {
      * 
      */
 
-    router.post('/footplayer/request', checkAuthToken, checkRole([ROLE.CLUB, ROLE.ACADEMY]), footplayerValidator.footplayerRequestAPIValidation, function (req, res) {
+    router.post('/footplayer/request', checkAuthToken, checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.COACHE]), footplayerValidator.footplayerRequestAPIValidation, function (req, res) {
         let serviceInst = new FootPlayerService();
         responseHandler(req, res, serviceInst.sendFootplayerRequest({ sent_by: req.authUser.user_id, send_to: req.body.to, member_type: req.authUser.member_type }));
     });
-
+  
+  router.post("/coache/request", checkAuthToken, checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.COACHE]), footplayerValidator.footplayerRequestAPIValidation ,function (req, res) {
+  
+        let serviceInst = new FootPlayerService();
+        responseHandler(
+          req,
+          res,
+          serviceInst.sendCoacheRequest({
+            sent_by: req.authUser.user_id,
+            send_to: req.body.to,
+            member_type: req.authUser.member_type,
+          })
+        );
+      }
+    );
     /**
      * @api {get} /footplayer/requests?requested_by=<club>&page_no=1&page_size=10 footplayer request list
      * @apiName footplayer request list
@@ -169,7 +210,7 @@ module.exports = (router) => {
      * 
      */
 
-    router.get("/footplayer/requests", checkAuthToken, checkRole([ROLE.PLAYER]), footplayerValidator.footplayerRequestListValidation, function (req, res) {
+    router.get("/footplayer/requests", checkAuthToken, checkRole([ROLE.PLAYER,ROLE.COACHE]), footplayerValidator.footplayerRequestListValidation, function (req, res) {
         let paginationOptions = {
             page_no: (req.query && req.query.page_no) ? req.query.page_no : 1,
             limit: (req.query && req.query.page_size) ? Number(req.query.page_size) : 10
@@ -445,6 +486,7 @@ module.exports = (router) => {
   router.get("/footplayers", checkAuthToken, footplayerValidator.footplayersListValidation, async (req, res, next) => {
     
     try {
+      console.log("inside footplayers searc middleware====>")
       let filters = {
         footplayers: Number(req.query.footplayers) || 0,
         search: req.query.search,

@@ -527,4 +527,7 @@ module.exports = (router) => {
         let serviceInst = new ConnectionService();
         responseHandler(req, res, serviceInst.getFootMateRequestList({ paginationOptions, user_id: req.authUser.user_id }));
     });
+
+    //api for Add Traning Center
+
 }

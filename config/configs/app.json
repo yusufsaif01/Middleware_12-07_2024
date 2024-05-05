@@ -33,6 +33,12 @@
 		"env": "APP_CLIENT_URLS",
 		"arg": "app_client_urls"
 	},
+    "redirect_domains":{
+		"doc": "For setting down the redirect urls of app.",
+		"default": "http://yftchain.local",
+		"env": "Redirect_URL",
+		"arg": "redirect_url"
+	},
 	"facebook_url": {
         "doc": "provide default facebook url",
         "format": "String",

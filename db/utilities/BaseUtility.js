@@ -11,41 +11,23 @@ class BaseUtility {
     this.model = await Model.getModel(this.schemaObj);
   }
 
-  async findOne(conditions = {}, projection = [], options = {}) {
-    try {
-      if (_.isEmpty(this.model)) {
-        await this.getModel();
-      }
-      conditions.deleted_at = { $exists: false };
-
-      projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
-
-      let result = await this.model
-        .findOne(conditions, projection, options)
-        .lean();
-      return result;
-    } catch (e) {
-      console.log(
-        `Error in findOne() while fetching data for ${this.schemaObj.schemaName} :: ${e}`
-      );
-      throw e;
-    }
-  }
+  
 
   async find(conditions = {}, projection = {}, options = {}) {
     try {
+      
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-      conditions.deleted_at = { $exists: false };
+     conditions.deleted_at = { $exists: false };
 
       if (options && (!options.sort || !Object.keys(options.sort).length)) {
         options.sort = { createdAt: -1 };
       }
 
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
-
-      const result = await this.model.find(conditions, projection);
+  
+      const result = await this.model.find(conditions);
 
       return result;
     } catch (e) {
@@ -78,8 +60,10 @@ class BaseUtility {
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-
+      console.log("record issssss")
+      console.log(record)
       let result = await this.model.create(record);
+      
       return result;
     } catch (e) {
       console.log(
@@ -113,7 +97,7 @@ class BaseUtility {
         await this.getModel();
       }
       conditions.deleted_at = { $exists: false };
-
+      console.log("request inside updateManyyyyy")
       let result = await this.model.update(conditions, updatedDoc, options);
       return result;
     } catch (e) {
@@ -132,6 +116,7 @@ class BaseUtility {
       conditions.deleted_at = { $exists: false };
 
       let result = await this.model.updateOne(conditions, updatedDoc, options);
+      console.log("request inside updateOneee")
       console.log(result);
       return result;
     } catch (e) {
@@ -150,6 +135,10 @@ class BaseUtility {
       }
       conditions.deleted_at = { $exists: false };
       options.new = true;
+     
+      console.log("inside findOneAndUpdate =====>")
+      console.log("conditions", conditions);
+      console.log("options", options);
       return this.model.findOneAndUpdate(conditions, updatedDoc, options);
     } catch (e) {
       console.log(
@@ -232,6 +221,7 @@ class BaseUtility {
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
+    console.log("inside find",conditions)
       conditions.deleted_at = { $exists: false };
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
       let result = await this.model
