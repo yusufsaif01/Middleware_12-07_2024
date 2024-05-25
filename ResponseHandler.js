@@ -1,6 +1,7 @@
 const errors = require("./errors");
 class ResponseHandler {
   successHandler(data) {
+    console.log("come inside success handlere")
     let response = {
       status: "success",
       message: "Successfully done",
@@ -13,6 +14,7 @@ class ResponseHandler {
   }
 
   errorHandler(data) {
+    console.log("inside error handlere")
     return Promise.reject(data);
   }
 }

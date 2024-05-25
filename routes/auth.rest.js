@@ -9,6 +9,7 @@ const {
 const responseHandler = require("../ResponseHandler");
 const AuthService = require("../services/AuthService");
 const axios = require("axios");
+const OtpService = require("../services/OtpService");
 module.exports = (router) => {
   /**
    * @api {post} /register register
@@ -53,32 +54,33 @@ module.exports = (router) => {
       responseHandler(req, res, serviceInst.memberRegistration(req.body));
     }
   );
+  //
+
+  //otp verify
+
+  router.get("/otp/verify", function (req, res) {
+    console.log(req.body.otp);
+    console.log(req.body.email);
+
+    const obj = {};
+    obj.email = req.query.email;
+    obj.otp = req.query.otp;
+
+    const serviceInst = new OtpService();
+    responseHandler(req, res, serviceInst.otpVerify(obj));
+  });
 
   // for  create traning center
 
+  router.post("/create_traning_center", checkAuthToken, function (req, res) {
+    const serviceInst = new CreateTraningCenterService();
+    responseHandler(req, res, serviceInst.createTraningCenter(req.body));
+  });
 
-      router.post(
-        "/create_traning_center",
-        checkAuthToken,
-        function (req, res) {
-             const serviceInst = new CreateTraningCenterService();
-             responseHandler(
-               req,
-               res,
-               serviceInst.createTraningCenter(req.body)
-             );
-        }
-      );
-  
-  
-     router.get("/coache/list/:id", checkAuthToken, function (req, res) {
-       const serviceInst = new CreateTraningCenterService();
-       responseHandler(
-         req,
-         res,
-         serviceInst.getCoacheList(req.params.id)
-       );
-     });
+  router.get("/coache/list/:id", checkAuthToken, function (req, res) {
+    const serviceInst = new CreateTraningCenterService();
+    responseHandler(req, res, serviceInst.getcoacheList(req.params.id));
+  });
   /**
    * @api {post} /login login
    * @apiName Login
@@ -161,7 +163,11 @@ module.exports = (router) => {
     checkTokenForAccountActivation,
     function (req, res, next) {
       const authServiceInst = new AuthService();
-      responseHandler(req, res, authServiceInst.emailVerification(req.authUser));
+      responseHandler(
+        req,
+        res,
+        authServiceInst.emailVerification(req.authUser)
+      );
     }
   );
   /**
@@ -216,13 +222,13 @@ module.exports = (router) => {
    */
   router.post(
     "/create-password",
-    checkTokenForAccountActivation,
+    //checkTokenForAccountActivation,
     function (req, res) {
- 
       const obj = {};
       obj.body = req.body;
-      obj.authUser = req.authUser;
-      if (req.authUser.country_code == "+91") {
+      console.log(obj);
+      // obj.authUser = req.authUser;
+      if (true) {
         axios
           .post("http://yftchain.local/registration/in/create-password", obj)
           .then(function (response) {
@@ -245,13 +251,13 @@ module.exports = (router) => {
       } else {
         console.log("country code not match");
       }
- let response = {
-   status: "success",
-   message: "Successfully done",
- };
-      return res.json(response)
+      let response = {
+        status: "success",
+        message: "Successfully done",
+      };
+      return res.json(response);
       //const authServiceInst = new AuthService();
-    // responseHandler(req, res, authServiceInst.createPassword(req.authUser, req.body.password, req.body.confirmPassword));
+      // responseHandler(req, res, authServiceInst.createPassword(req.authUser, req.body.password, req.body.confirmPassword));
     }
   );
   /**

@@ -1,8 +1,8 @@
-const uuidv4 = require('uuid/v4');
-const MEMBER = require('../../constants/MemberType')
-const ACCOUNT = require('../../constants/AccountStatus')
-const PROFILE = require('../../constants/ProfileStatus')
-const ROLE = require('../../constants/Role')
+const uuidv4 = require("uuid/v4");
+const MEMBER = require("../../constants/MemberType");
+const ACCOUNT = require("../../constants/AccountStatus");
+const PROFILE = require("../../constants/ProfileStatus");
+const ROLE = require("../../constants/Role");
 module.exports = {
   fields: {
     user_id: {
@@ -61,11 +61,11 @@ module.exports = {
     },
     member_type: {
       type: String,
-      enum: [MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.COACHE],
+      enum: [MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coache],
     },
     role: {
       type: String,
-      enum: [ROLE.ADMIN, ROLE.PLAYER, ROLE.CLUB, ROLE.ACADEMY, ROLE.COACHE],
+      enum: [ROLE.ADMIN, ROLE.PLAYER, ROLE.CLUB, ROLE.ACADEMY, ROLE.coache],
     },
   },
 

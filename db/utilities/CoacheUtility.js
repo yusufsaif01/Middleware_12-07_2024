@@ -1,10 +1,10 @@
-const CoacheSchema = require("../schemas/CoacheSchema");
+const coacheSchema = require("../schemas/CoacheSchema");
 const BaseUtility = require("./BaseUtility");
 
-class CoacheUtility extends BaseUtility {
+class coacheUtility extends BaseUtility {
   constructor() {
-    super(CoacheSchema);
+    super(coacheSchema);
   }
 }
 
-module.exports = CoacheUtility;
+module.exports = coacheUtility;

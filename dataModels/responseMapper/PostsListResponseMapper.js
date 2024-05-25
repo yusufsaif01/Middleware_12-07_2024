@@ -15,7 +15,8 @@ class PostsListResponseMapper {
                         "is_liked": false,
                         "likes": p.likes,
                         "comments": "-",
-                        "created_at": p.post.created_at
+                        "created_at": p.post.created_at,
+                        "caption":p.post.caption
                     };
                     if (p.likedByMe && p.likedByMe.length) {
                         data.is_liked = true;

@@ -1,7 +1,7 @@
 const Promise = require("bluebird");
 const errors = require("../errors");
 const PlayerUtility = require("../db/utilities/PlayerUtility");
-const CoacheUtility = require("../db/utilities/CoacheUtility");
+const coacheUtility = require("../db/utilities/CoacheUtility");
 const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
 const AuthUtility = require("../db/utilities/AuthUtility");
 const LoginUtility = require("../db/utilities/LoginUtility");
@@ -27,7 +27,7 @@ class UserService extends BaseService {
   constructor() {
     super();
     this.playerUtilityInst = new PlayerUtility();
-    this.coacheUtilityInst = new CoacheUtility();
+    this.coacheUtilityInst = new coacheUtility();
     this.clubAcademyUtilityInst = new ClubAcademyUtility();
     this.achievementUtilityInst = new AchievementUtility();
     this.connectionUtilityInst = new ConnectionUtility();
@@ -124,7 +124,7 @@ class UserService extends BaseService {
         amateur_count = 0,
         professional_count = 0,
         grassroot_count = 0;
-    
+
       totalRecords = await this.playerUtilityInst.countList(conditions);
       amateur_count = await this.playerUtilityInst.countList({
         ...conditions,
@@ -327,7 +327,7 @@ class UserService extends BaseService {
       }
       let response = { total: totalRecords, records: responseData };
       console.log("response is==>");
-      console.log(response)
+      console.log(response);
       return response;
     } catch (e) {
       console.log("Error in getMemberList() of UserService", e);
@@ -338,20 +338,18 @@ class UserService extends BaseService {
   async getDetails(requestedData = {}) {
     try {
       let user = requestedData.user;
-    
+
       if (requestedData._category == "personal_details") {
-        
         const axiosrcivedata = await axios.get(
           `http://yftchain.local/registration/in/profile/:_category/${user.user_id}`
         );
-      
+
         return axiosrcivedata.data.data;
       } else {
-        
         let loginDetails = await this.loginUtilityInst.findOne({
           user_id: user.user_id,
         });
-      
+
         if (loginDetails) {
           if (!loginDetails.is_email_verified) {
             return responseHandler(
@@ -362,17 +360,19 @@ class UserService extends BaseService {
               )
             );
           }
-         
+
           let data = {},
             projection = {};
+          console.log("requestedData._category", requestedData._category);
           projection = await this.getProfileProjection(requestedData._category);
           if (loginDetails.member_type == MEMBER.PLAYER) {
             data = await this.playerUtilityInst.findOne(
               { user_id: user.user_id },
               projection
             );
-          } else if (loginDetails.member_type == MEMBER.COACHE) {
-            data = await this.coacheUtilityInst.findOne(
+          } else if (loginDetails.member_type == MEMBER.coache) {
+            console.log("55555555555555555")
+            data = await this.coacheUtilityInst.findOneForCoachProfessional(
               { user_id: user.user_id },
               projection
             );
@@ -465,20 +465,17 @@ class UserService extends BaseService {
 
   async getPublicProfileDetails(user = {}) {
     try {
-    
       const response = await axios.get(
-        `http://yftchain.local/registration/in/member/public/profile/${user.user_id}/${user.sent_by}`,
-        
+        `http://yftchain.local/registration/in/member/public/profile/${user.user_id}/${user.sent_by}`
       );
-        if (!_.isEmpty(response)) {
-       
-          return Promise.resolve(response.data.data);
-        } else {
-          return Promise.reject(
-            new errors.NotFound(RESPONSE_MESSAGE.MEMBER_NOT_FOUND)
-          );
-        }
-      
+      if (!_.isEmpty(response)) {
+        return Promise.resolve(response.data.data);
+      } else {
+        return Promise.reject(
+          new errors.NotFound(RESPONSE_MESSAGE.MEMBER_NOT_FOUND)
+        );
+      }
+
       throw new errors.NotFound(RESPONSE_MESSAGE.MEMBER_NOT_FOUND);
     } catch (e) {
       console.log("Error in getPublicProfileDetails() of UserService", e);

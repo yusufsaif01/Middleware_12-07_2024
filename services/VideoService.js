@@ -31,19 +31,18 @@ module.exports = class VideoService {
     this.clubacademyutility = new ClubAcademyUtility();
   }
 
-  async uploadVideo(authUser, type, { tags, media, others }) {
+  async uploadVideo(authUser, type, { tags, media, others, text }) {
 
       
     try { 
+      console.log("inside video upload")
       const totalUpload =  await this.getUploadLimit( authUser.role, type)
       const hasUploaded = await this.hasUploadedInWeek(authUser, type, totalUpload)
-      // const hasUploaded = 1
-      console.log(totalUpload, " total upload ")
-      console.log(hasUploaded, " total hasUploaded ")
-
+       
       if (hasUploaded <totalUpload){
      
-      const videoOptions = this.getUploadOptions(authUser, type);
+        const videoOptions = this.getUploadOptions(authUser, type);
+        
       const tagsData = await this.validateAttributesAndAbilities(tags);
       const videoResponse = await this.uploadToVimeo(media, videoOptions);
 
@@ -52,7 +51,8 @@ module.exports = class VideoService {
         type,
         tagsData,
         videoResponse,
-        others
+        others,
+        text
       );
       await this.videoQueueService.addToQueue({
         post_id: postDocument.id,
@@ -108,82 +108,59 @@ module.exports = class VideoService {
       [POST_TYPE.LEARNING_OR_TRAINING]: 2,
       [POST_TYPE.MATCH]: 1,
     },
+    [ROLE.coache]: {
+      [POST_TYPE.TIMELINE]: 100,
+    },
   };
 
   return uploadLimits[role][type] || 0;
 }
 
 async  hasUploadedInWeek(authUser, POST_TYPE, totalUpload) {
-
-  console.log(POST_TYPE)
-
-  //
-
-  
-
-  try {
+try {
     
 const today = new Date();
 const todayISOString = today.toISOString();
-
 const startOfWeek = new Date(today);
 startOfWeek.setDate(today.getDate() - today.getDay());
 startOfWeek.setHours(0, 0, 0, 0); // Set time to 00:00:00.000
 startOfWeek.setUTCMilliseconds(-startOfWeek.getTimezoneOffset() * 60 * 1000);
 const startOfWeekISOString = startOfWeek.toISOString();
-
 const endOfWeek = new Date(today);
 endOfWeek.setDate(startOfWeek.getDate() + 6);
 endOfWeek.setHours(23, 59, 59, 999); // Set time to 23:59:59.999
 endOfWeek.setUTCMilliseconds(-endOfWeek.getTimezoneOffset() * 60 * 1000); 
 const endOfWeekISOString = endOfWeek.toISOString();
-
 console.log('Today:', todayISOString);
 console.log('Start of the week:', startOfWeekISOString);
 console.log('End of the week:', endOfWeekISOString);
-
-
-
-
 //const userId1 = { id: 'c13eff28-1ec6-477d-970c-3682911c8aea' }; 
 const userId1 = { id: authUser.user_id }; 
 console.log(userId1.id, " user id 1 value");
-
 //post_type:POST_TYPE
-
-
-
     const conditions =  {posted_by:  userId1.id.toString() , "media.media_type" : "video", 
     post_type: POST_TYPE,  
     created_at: { $gte: startOfWeek.getTime(), $lte: endOfWeek.getTime() }
   }
- 
-   
 let  count = await postInst.countList(conditions);
 //const postCounts = { [userId1.id]: count };
 // console.log(postCounts, "count of posts")
-
-
 console.log(`Number of posts by ${userId1.id}: ${count}`);
 console.log(count)
 return count
 // console.log(postCounts);
   } 
-
-  
   catch (error) {
     console.log("Error in checking video uploads for the week", error);
     // throw new errors.ValidationFailed(ResponseMessage.UPLOAD_LIMIT_EXCEEDED);
 
   }
-
-  
 }
 
-  
   async validateAttributesAndAbilities(tags) {
     try {
-      const abilityIdArray = tags.map((tag) => tag.ability);
+      const data=JSON.parse(tags);
+      const abilityIdArray = data.map((tag) => tag.ability);
       let abilitiesDB = await abilityInst.aggregate([
         { $match: { id: { $in: abilityIdArray } } },
         {
@@ -204,7 +181,7 @@ return count
         mappedData[abilities.id] = abilities;
       });
 
-      return tags.map((tag) => {
+      return data.map((tag) => {
         if (!mappedData[tag.ability]) {
           return null;
         }
@@ -248,8 +225,9 @@ return count
     }
   }
 
-  async addPost(authUser, type, dataTags, videoResponse, others) {
+  async addPost(authUser, type, dataTags, videoResponse, others, text) {
     try {
+      console.log("text inside addPost",text)
       const data = {
         posted_by: authUser.user_id,
         created_at: Date.now(),
@@ -262,6 +240,7 @@ return count
         },
         status: PostStatus.PENDING,
         post_type: type,
+        caption:text,
         meta: {
           abilities: dataTags,
           others: others,

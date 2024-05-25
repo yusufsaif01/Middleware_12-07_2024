@@ -1,11 +1,11 @@
-const uuid = require('uuid/v4');
-const mongoose = require('mongoose');
-const ATTACHMENT_TYPE = require('../../constants/AttachmentType');
-const DOCUMENT_TYPE = require('../../constants/DocumentType');
+const uuid = require("uuid/v4");
+const mongoose = require("mongoose");
+const ATTACHMENT_TYPE = require("../../constants/AttachmentType");
+const DOCUMENT_TYPE = require("../../constants/DocumentType");
 const Schema = mongoose.Schema;
-const PLAYER = require('../../constants/PlayerType')
-const DOCUMENT_STATUS = require('../../constants/DocumentStatus')
-const GENDER = require('../../constants/gender')
+const PLAYER = require("../../constants/PlayerType");
+const DOCUMENT_STATUS = require("../../constants/DocumentStatus");
+const GENDER = require("../../constants/gender");
 
 module.exports = {
   fields: {
@@ -162,13 +162,13 @@ module.exports = {
       type: String,
     },
     club_academy_details: {
-      head_coach_name: {
+      head_coache_name: {
         type: String,
       },
-      head_coach_phone: {
+      head_coache_phone: {
         type: String,
       },
-      head_coach_email: {
+      head_coache_email: {
         type: String,
       },
     },

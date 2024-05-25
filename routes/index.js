@@ -17,7 +17,7 @@ const video = require('./video.rest');
 const reportCardRoutes = require('./report-card.rest');
 const accessToken = require('./access-token.rest');
 const checkAccessToken = require('../middleware/auth/access-token');
-
+const coachRest = require("./coach.rest");
 class Route {
 	loadRoutes(app) {
 		const apiRouter = express.Router();
@@ -39,7 +39,7 @@ class Route {
 		employmentContract(apiRouter);
 		video(apiRouter);
 		reportCardRoutes(apiRouter);
-		
+		coachRest(apiRouter);
 		accessToken(accessTokenRouter);
 
 		app.use("/api/access-token", accessTokenRouter)

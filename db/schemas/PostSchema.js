@@ -22,6 +22,7 @@ module.exports = {
       media_url: {
         type: String,
       },
+
       media_thumbnail: {
         url: {
           type: String,
@@ -39,6 +40,9 @@ module.exports = {
       type: String,
       enum: POST_STATUS.AVAILABLE_POST_STATUS,
     },
+    caption: {
+      type: String,
+    },
     post_type: {
       type: String,
       enum: POST_TYPE.ALLOWED_POST_TYPES,
@@ -52,7 +56,7 @@ module.exports = {
           attributes: [{ attribute_id: String, attribute_name: String }],
         },
       ],
-      others:[String],
+      others: [String],
     },
     created_at: {
       type: Date,

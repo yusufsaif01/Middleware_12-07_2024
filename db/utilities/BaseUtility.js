@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const Model = require("../model");
 const errors = require("../../errors");
+const LoginUtility = require("./LoginUtility");
 
 class BaseUtility {
   constructor(schemaObj) {
@@ -11,25 +12,68 @@ class BaseUtility {
     this.model = await Model.getModel(this.schemaObj);
   }
 
-  
-
   async find(conditions = {}, projection = {}, options = {}) {
     try {
-      
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-     conditions.deleted_at = { $exists: false };
+      conditions.deleted_at = { $exists: false };
 
       if (options && (!options.sort || !Object.keys(options.sort).length)) {
         options.sort = { createdAt: -1 };
       }
 
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
-  
+
       const result = await this.model.find(conditions);
 
       return result;
+    } catch (e) {
+      console.log(
+        `Error in find() while fetching data for ${this.schemaObj.schemaName} :: ${e}`
+      );
+      throw e;
+    }
+  }
+  async otpVerify(conditions = {}) {
+    try {
+      console.log("inside otpVerify");
+      const projection = {};
+      const options = {};
+      if (_.isEmpty(this.model)) {
+        await this.getModel();
+      }
+
+      console.log("condition issssss", conditions);
+      const result = await this.model.findOne(conditions);
+      if (result) {
+        console.log("result in loginnn");
+        console.log(result);
+      }
+      console.log("result is", result);
+      return result;
+    } catch (e) {
+      console.log(
+        `Error in find() while fetching data for ${this.schemaObj.schemaName} :: ${e}`
+      );
+      throw e;
+    }
+  }
+  async findOneForToken(conditions = {}) {
+    try {
+      console.log("inside otpVerify");
+      const projection = {};
+      const options = {};
+      if (_.isEmpty(this.model)) {
+        await this.getModel();
+      }
+
+      console.log("condition issssss", conditions);
+      const result = await this.model.findOne(conditions);
+
+      console.log("result in find one in tokem");
+      console.log(result);
+      return result.forgot_password_token;
     } catch (e) {
       console.log(
         `Error in find() while fetching data for ${this.schemaObj.schemaName} :: ${e}`
@@ -60,10 +104,11 @@ class BaseUtility {
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-      console.log("record issssss")
-      console.log(record)
+      console.log("record issssss");
+      console.log(record);
       let result = await this.model.create(record);
-      
+      console.log("data after insert is===>");
+      console.log(result);
       return result;
     } catch (e) {
       console.log(
@@ -97,7 +142,7 @@ class BaseUtility {
         await this.getModel();
       }
       conditions.deleted_at = { $exists: false };
-      console.log("request inside updateManyyyyy")
+      console.log("request inside updateManyyyyy");
       let result = await this.model.update(conditions, updatedDoc, options);
       return result;
     } catch (e) {
@@ -116,7 +161,7 @@ class BaseUtility {
       conditions.deleted_at = { $exists: false };
 
       let result = await this.model.updateOne(conditions, updatedDoc, options);
-      console.log("request inside updateOneee")
+      console.log("request inside updateOneee");
       console.log(result);
       return result;
     } catch (e) {
@@ -135,8 +180,8 @@ class BaseUtility {
       }
       conditions.deleted_at = { $exists: false };
       options.new = true;
-     
-      console.log("inside findOneAndUpdate =====>")
+
+      console.log("inside findOneAndUpdate =====>");
       console.log("conditions", conditions);
       console.log("options", options);
       return this.model.findOneAndUpdate(conditions, updatedDoc, options);
@@ -216,17 +261,41 @@ class BaseUtility {
     }
   }
 
+  async findOneForCoachProfessional(
+    conditions = {},
+    projection = [],
+    options = {}
+  ) {
+    try {
+      if (_.isEmpty(this.model)) {
+        await this.getModel();
+      }
+      console.log("inside finddddddddddddddd", conditions);
+      conditions.deleted_at = { $exists: false };
+      projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
+      let result = await this.model.findOne(conditions);
+
+      console.log("result isssss", result);
+      return result;
+    } catch (e) {
+      console.log(
+        `Error in findOne() while fetching data for ${this.schemaObj.schemaName} :: ${e}`
+      );
+      throw e;
+    }
+  }
+
   async findOne(conditions = {}, projection = [], options = {}) {
     try {
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-    console.log("inside find",conditions)
+      console.log("inside finddddddddddddddd", conditions);
       conditions.deleted_at = { $exists: false };
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
-      let result = await this.model
-        .findOne(conditions, projection, options)
-        .lean();
+      let result = await this.model.findOne(conditions, projection, options);
+
+      console.log("result isssss", result);
       return result;
     } catch (e) {
       console.log(

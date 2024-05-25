@@ -60,10 +60,9 @@ class UserRegistrationService extends UserService {
    * @memberof UserRegistrationService
    */
   async validateMemberRegistration(registerUser) {
-    
     if (
       registerUser.member_type == MEMBER.PLAYER ||
-      registerUser.member_type == MEMBER.COACHE
+      registerUser.member_type == MEMBER.coache
     ) {
       if (!registerUser.first_name) {
         return Promise.reject(

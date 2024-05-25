@@ -3,7 +3,7 @@ const errors = require("../errors");
 const LoginUtility = require("../db/utilities/LoginUtility");
 const PlayerUtility = require("../db/utilities/PlayerUtility");
 const TraningCenterUtility = require("../db/utilities/TraningCenterUtility");
-const CoacheUtility = require("../db/utilities/CoacheUtility")
+const coacheUtility = require("../db/utilities/CoacheUtility");
 const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
 const AuthUtility = require("../db/utilities/AuthUtility");
 const EmailService = require("./EmailService");
@@ -26,7 +26,7 @@ class CreateTraningCenterService {
    */
   constructor() {
     this.playerUtilityInst = new PlayerUtility();
-    this.CoacheUtility = new CoacheUtility();
+    this.coacheUtility = new coacheUtility();
     this.traningCenterUtility = new TraningCenterUtility();
     this.clubAcademyUtilityInst = new ClubAcademyUtility();
     this.loginUtilityInst = new LoginUtility();
@@ -118,14 +118,14 @@ class CreateTraningCenterService {
     }
   }
 
-  //Coache List
+  //coache List
 
-  async getCoacheList(id) {
+  async getcoacheList(id) {
     try {
-      console.log("inside getCoacheList ===========>")
-      console.log("id is", id)
-      
-      let data = await this.footPlayerUtilityInst.find({sent_by:id});
+      console.log("inside getcoacheList ===========>");
+      console.log("id is", id);
+
+      let data = await this.footPlayerUtilityInst.find({ sent_by: id });
       return data;
     } catch (e) {
       console.log("Error in getList() of AchievementService", e);

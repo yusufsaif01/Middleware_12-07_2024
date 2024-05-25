@@ -20,10 +20,10 @@ module.exports = {
     user_id: {
       type: String,
     },
-    country_code: {
+    nationality: {
       type: String,
     },
-    nationality: {
+    country_code: {
       type: String,
     },
     deleted_at: {
@@ -155,20 +155,20 @@ module.exports = {
         },
       },
     ],
-    strong_foot: {
+    year_of_exp: {
       type: String,
     },
-    weak_foot: {
+    academy_name: {
       type: String,
     },
     club_academy_details: {
-      head_coach_name: {
+      head_coache_name: {
         type: String,
       },
-      head_coach_phone: {
+      head_coache_phone: {
         type: String,
       },
-      head_coach_email: {
+      head_coache_email: {
         type: String,
       },
     },
@@ -199,13 +199,27 @@ module.exports = {
         type: String,
       },
     },
-    associated_club_academy: {
+    coache_certificate: {
       type: String,
     },
-    association: {
+    area_of_spec: {
       type: String,
     },
-    association_other: {
+    other_traning_style: {
+      type: String,
+    },
+
+    language: {
+      type: String,
+    },
+
+    current_role: {
+      type: String,
+    },
+    other_specilisation: {
+      type: String,
+    },
+    other_current_role: {
       type: String,
     },
     login_details: {

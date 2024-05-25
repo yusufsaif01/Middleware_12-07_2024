@@ -93,9 +93,9 @@ module.exports = (router) => {
    *                   "strong_foot": "left",
    *                   "associated_club_academy": "yes",
    *                   "club_academy_details": {
-   *                   "head_coach_name": "akshay",
-   *                   "head_coach_phone": "0987654321",
-   *                   "head_coach_email": "ak@ak.com" },
+   *                   "head_coache_name": "akshay",
+   *                   "head_coache_phone": "0987654321",
+   *                   "head_coache_email": "ak@ak.com" },
    *                   "former_club_academy": "former club",
    *                   "weak_foot": "3",
    *                   "member_type": "player",
@@ -150,6 +150,7 @@ module.exports = (router) => {
     userValidator.profileAPIParamsValidation,
     async function (req, res) {
       try {
+        console.log(req.params._category);
         let serviceInst = new UserService();
         responseHandler(
           req,
@@ -165,6 +166,7 @@ module.exports = (router) => {
       }
     }
   );
+
   /**
    * @api {put} /update-details/:_category update profile details
    * @apiName Update profile details
@@ -201,9 +203,9 @@ module.exports = (router) => {
    * @apiParam (body) {String} strong_foot player strong foot (when _category = professional_details)
    * @apiParam (body) {String} weak_foot player weak foot (when _category = professional_details)
    * @apiParam (body) {String} associated_club_academy (yes or no) (when _category = professional_details)
-   * @apiParam (body) {String} head_coach_name head coach name (when _category = professional_details)
-   * @apiParam (body) {String} head_coach_email head coach email (when _category = professional_details)
-   * @apiParam (body) {String} head_coach_phone head coach phone number (when _category = professional_details)
+   * @apiParam (body) {String} head_coache_name head coache name (when _category = professional_details)
+   * @apiParam (body) {String} head_coache_email head coache email (when _category = professional_details)
+   * @apiParam (body) {String} head_coache_phone head coache phone number (when _category = professional_details)
    * @apiParam (body) {String} former_club_academy player former club/academy (when _category = professional_details)
    * @apiParam (body) {String} pincode club/academy pincode (when _category = personal_details)
    * @apiParam (body) {String} address club/academy address (when _category = personal_details)
@@ -260,10 +262,10 @@ module.exports = (router) => {
     "/update-details/:_category",
     checkAuthToken,
     userValidator.profileAPIParamsValidation,
-    userValidator.updateDetailsAPIValidation,
+    //userValidator.updateDetailsAPIValidation,
     async function (req, res) {
       try {
-        console.log("api hitsss")
+        console.log("api hitsss");
         let serviceInst = new UserProfileService();
         req.body._category = req.params._category;
         let reqObj = await serviceInst.uploadProfileDocuments(

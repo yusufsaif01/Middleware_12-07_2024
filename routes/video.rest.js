@@ -55,7 +55,7 @@ module.exports = (router) => {
     validatePostType,
     userCanUploadVideo,
     checkUploadedVideo,
-    validateData,
+    //validateData,
     async (req, res, next) => {
       const { type } = req.query;
 
@@ -63,8 +63,9 @@ module.exports = (router) => {
         tags: req.body.tags,
         media: req.files.media,
         others: req.body.others,
+        text:req.body.text
       };
-      console.log("req bodyyyyyyyyyyyyyyyyy");
+      console.log("9999999999999999999999");
       console.log(reqBody);
       try {
         return responseHandler(

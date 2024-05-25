@@ -1,4 +1,4 @@
-class CoacheSearchListResponseMapper {
+class coacheSearchListResponseMapper {
   map(members) {
     let response = [];
     if (members.length) {
@@ -55,4 +55,4 @@ class CoacheSearchListResponseMapper {
   }
 }
 
-module.exports = CoacheSearchListResponseMapper;
+module.exports = coacheSearchListResponseMapper;

@@ -1,32 +1,33 @@
-const FootPlayerUtility = require('../db/utilities/FootPlayerUtility');
-const LoginUtility = require('../db/utilities/LoginUtility');
-const MEMBER = require('../constants/MemberType');
-const PROFILE_STATUS = require('../constants/ProfileStatus');
-const FOOTPLAYER_STATUS = require('../constants/FootPlayerStatus');
+const FootPlayerUtility = require("../db/utilities/FootPlayerUtility");
+const LoginUtility = require("../db/utilities/LoginUtility");
+const MEMBER = require("../constants/MemberType");
+const PROFILE_STATUS = require("../constants/ProfileStatus");
+const FOOTPLAYER_STATUS = require("../constants/FootPlayerStatus");
 const FootPlayerSearchListResponseMapper = require("../dataModels/responseMapper/FootPlayerSearchListResponseMapper");
-const CoacheSearchListResponseMapper = require("../dataModels/responseMapper/CoacheSearchListResponseMapper");
+const coacheSearchListResponseMapper = require("../dataModels/responseMapper/CoacheSearchListResponseMapper");
 const FootPlayerRequestListResponseMapper = require("../dataModels/responseMapper/FootplayerRequestListResponseMapper");
-const RESPONSE_MESSAGE = require('../constants/ResponseMessage');
+const RESPONSE_MESSAGE = require("../constants/ResponseMessage");
 const _ = require("lodash");
-const PlayerUtility = require('../db/utilities/PlayerUtility');
-const CoacheUtility = require('../db/utilities/CoacheUtility')
+const PlayerUtility = require("../db/utilities/PlayerUtility");
+const coacheUtility = require("../db/utilities/CoacheUtility");
 const errors = require("../errors");
-const EmailService = require('./EmailService');
-const ClubAcademyUtility = require('../db/utilities/ClubAcademyUtility');
-const ConnectionService = require('./ConnectionService');
+const EmailService = require("./EmailService");
+const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
+const ConnectionService = require("./ConnectionService");
 const config = require("../config");
-const moment = require('moment');
+const moment = require("moment");
 const ClubFootPlayersResponseMapping = require("../dataModels/responseMapper/ClubFootPlayersResponseMapping");
 const CONTRACT_STATUS = require("../constants/ContractStatus");
-const UtilityService = require('./UtilityService');
-const ReportCardUtility = require('../db/utilities/ReportCardUtility');
-const REPORT_CARD_STATUS = require('../constants/ReportCardStatus');
-const CoachUtility= require("../db/utilities/CoacheUtility")
+const UtilityService = require("./UtilityService");
+const ReportCardUtility = require("../db/utilities/ReportCardUtility");
+const REPORT_CARD_STATUS = require("../constants/ReportCardStatus");
+const FootCoachUtility = require("../db/utilities/FootCoachUtility")
 class FootPlayerService {
   constructor() {
     this.footPlayerUtilityInst = new FootPlayerUtility();
-    
-    this.coachUtility = new CoachUtility();
+
+    this.coacheUtility = new coacheUtility();
+    this.footCoachUtilityInst = new FootCoachUtility();
     this.loginUtilityInst = new LoginUtility();
     this.playerUtilityInst = new PlayerUtility();
     this.emailService = new EmailService();
@@ -249,11 +250,11 @@ class FootPlayerService {
 
   async coacheSearch(requestedData = {}) {
     try {
-      let filterConditions = this._prepareCoacheFilterCondition(
+      let filterConditions = this._preparecoacheFilterCondition(
         requestedData.filterConditions
       );
       let data = await this.loginUtilityInst.aggregate([
-        { $match: { is_deleted: false, member_type: MEMBER.COACHE } },
+        { $match: { is_deleted: false, member_type: MEMBER.coache } },
         { $project: { user_id: 1, profile_status: 1, _id: 0 } },
         {
           $lookup: {
@@ -281,7 +282,7 @@ class FootPlayerService {
                 },
               },
               position: 1,
-              member_type: MEMBER.COACHE,
+              member_type: MEMBER.coache,
               player_type: 1,
               avatar_url: 1,
               phone: 1,
@@ -309,7 +310,7 @@ class FootPlayerService {
             $match: {
               is_deleted: false,
               member_type: {
-                $in: [MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.COACHE],
+                $in: [MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coache],
               },
             },
           },
@@ -349,7 +350,7 @@ class FootPlayerService {
         ]);
       }
       console.log("before send in fpslrm", data);
-      data = new CoacheSearchListResponseMapper().map(data);
+      data = new coacheSearchListResponseMapper().map(data);
       console.log("fetch data is");
       console.log(data);
       return { total: data.length, records: data };
@@ -365,7 +366,7 @@ class FootPlayerService {
    * @returns
    * @memberof FootPlayerService
    */
-  _prepareCoacheFilterCondition(filterConditions = {}) {
+  _preparecoacheFilterCondition(filterConditions = {}) {
     let condition = {};
     let filterArr = [];
     if (filterConditions) {
@@ -465,19 +466,19 @@ class FootPlayerService {
     }
   }
 
-  async sendCoacheRequest(requestedData = {}) {
+  async sendcoacheRequest(requestedData = {}) {
     try {
-     let previousRequest = await this.sendFootplayerRequestValidator(
+      let previousRequest = await this.sendFootcoachRequestValidator(
         requestedData
       );
-      console.log("inside sendCoacheRequest")
-      let send_to_data = await this.coachUtility.findOne(
+      console.log("inside sendcoacheRequest");
+      let send_to_data = await this.coacheUtility.findOne(
         { user_id: requestedData.send_to },
         { first_name: 1, last_name: 1, phone: 1, email: 1, _id: 0 }
       );
       if (!previousRequest.isRejected) {
         console.log("inside iiiiiiiiffffffffff inserttttttttt");
-        await this.footPlayerUtilityInst.insert({
+        await this.footCoachUtilityInst.insert({
           sent_by: requestedData.sent_by,
           send_to: {
             user_id: requestedData.send_to,
@@ -489,7 +490,7 @@ class FootPlayerService {
       }
       if (previousRequest.isRejected) {
         console.log("inside elseeeeeeeeeeeeeee");
-        await this.footPlayerUtilityInst.updateOne(
+        await this.footCoachUtilityInst.updateOne(
           { id: previousRequest.data.id },
           {
             status: FOOTPLAYER_STATUS.PENDING,
@@ -552,7 +553,87 @@ class FootPlayerService {
         {
           user_id: requestedData.send_to,
           member_type: MEMBER.PLAYER,
-          member_type: MEMBER.COACHE,
+          // member_type: MEMBER.coache,
+        },
+        { profile_status: 1 }
+      );
+      if (_.isEmpty(to_be_footplayer)) {
+        return Promise.reject(
+          new errors.ValidationFailed(
+            RESPONSE_MESSAGE.MEMBER_TO_BE_FOOTPLAYER_NOT_FOUND
+          )
+        );
+      }
+      if (
+        to_be_footplayer &&
+        to_be_footplayer.profile_status &&
+        to_be_footplayer.profile_status.status &&
+        to_be_footplayer.profile_status.status != PROFILE_STATUS.VERIFIED
+      ) {
+        return Promise.reject(
+          new errors.ValidationFailed(RESPONSE_MESSAGE.PLAYER_NOT_VERIFIED)
+        );
+      }
+    }
+    let footplayerRequest = await this.footPlayerUtilityInst.findOne(
+      {
+        sent_by: requestedData.sent_by,
+        "send_to.user_id": requestedData.send_to,
+      },
+      { id: 1, status: 1, _id: 1 }
+    );
+    let isRejected = false;
+    if (!_.isEmpty(footplayerRequest)) {
+      if (footplayerRequest.status === FOOTPLAYER_STATUS.PENDING) {
+        return Promise.reject(
+          new errors.Conflict(RESPONSE_MESSAGE.FOOTPLAYER_REQUEST_ALREADY_SENT)
+        );
+      }
+      if (footplayerRequest.status === FOOTPLAYER_STATUS.ADDED) {
+        return Promise.reject(
+          new errors.Conflict(RESPONSE_MESSAGE.ALREADY_FOOTPLAYER)
+        );
+      }
+      if (footplayerRequest.status === FOOTPLAYER_STATUS.REJECTED) {
+        isRejected = true;
+      }
+    }
+    if (requestedData.member_type === MEMBER.CLUB) {
+      await this.isFootplayerOfOtherClub(requestedData.send_to);
+    }
+    let previousRequest = { isRejected: isRejected, data: footplayerRequest };
+    return Promise.resolve(previousRequest);
+  }
+
+  //validates requestData for sendFootCoachRequest
+
+  async sendFootcoachRequestValidator(requestedData = {}) {
+    let sent_by_details = await this.loginUtilityInst.findOne(
+      { user_id: requestedData.sent_by },
+      { profile_status: 1 }
+    );
+    if (
+      sent_by_details.profile_status &&
+      sent_by_details.profile_status.status &&
+      sent_by_details.profile_status.status != PROFILE_STATUS.VERIFIED
+    ) {
+      return Promise.reject(
+        new errors.ValidationFailed(RESPONSE_MESSAGE.USER_PROFILE_NOT_VERIFIED)
+      );
+    }
+    if (requestedData.send_to === requestedData.sent_by) {
+      return Promise.reject(
+        new errors.ValidationFailed(
+          RESPONSE_MESSAGE.CANNOT_SEND_FOOTPLAYER_REQUEST_TO_YOURSELF
+        )
+      );
+    }
+    if (requestedData.send_to) {
+      let to_be_footplayer = await this.loginUtilityInst.findOne(
+        {
+          user_id: requestedData.send_to,
+          // member_type: MEMBER.PLAYER,
+          member_type: MEMBER.coache,
         },
         { profile_status: 1 }
       );
@@ -767,6 +848,76 @@ class FootPlayerService {
     }
   }
 
+  //getFootcoachRequestList
+  async getFootcoachRequestList(requestedData = {}) {
+    try {
+      let paginationOptions = requestedData.paginationOptions || {};
+      let requested_by = requestedData.filterConditions.requested_by;
+      let skipCount = (paginationOptions.page_no - 1) * paginationOptions.limit;
+      let options = { limit: paginationOptions.limit, skip: skipCount };
+      let data = await this.footCoachUtilityInst.aggregate([
+        {
+          $match: {
+            "send_to.user_id": requestedData.user_id,
+            status: FOOTPLAYER_STATUS.PENDING,
+            is_deleted: false,
+          },
+        },
+        { $project: { sent_by: 1, request_id: "$id" } },
+        {
+          $lookup: {
+            from: "club_academy_details",
+            localField: "sent_by",
+            foreignField: "user_id",
+            as: "club_academy_detail",
+          },
+        },
+        { $unwind: { path: "$club_academy_detail" } },
+        {
+          $project: {
+            club_academy_detail: {
+              request_id: "$request_id",
+              user_id: 1,
+              name: 1,
+              type: 1,
+              avatar_url: 1,
+              member_type: 1,
+            },
+          },
+        },
+        { $match: { "club_academy_detail.member_type": requested_by } },
+        {
+          $facet: {
+            data: [{ $skip: options.skip }, { $limit: options.limit }],
+            total_data: [{ $group: { _id: null, count: { $sum: 1 } } }],
+          },
+        },
+      ]);
+      let responseData = [],
+        totalRecords = 0;
+      if (data && data.length && data[0] && data[0].data) {
+        responseData = new FootPlayerRequestListResponseMapper().map(
+          data[0].data
+        );
+        if (
+          data[0].data.length &&
+          data[0].total_data &&
+          data[0].total_data.length &&
+          data[0].total_data[0].count
+        ) {
+          totalRecords = data[0].total_data[0].count;
+        }
+      }
+      let response = { total: totalRecords, records: responseData };
+      return Promise.resolve(response);
+    } catch (e) {
+      console.log(
+        "Error in getFootplayerRequestList() of FootPlayerService",
+        e
+      );
+      return Promise.reject(e);
+    }
+  }
   /**
    * accept footplayer request
    *
@@ -782,7 +933,7 @@ class FootPlayerService {
         sent_by: requestedData.sent_by,
         "send_to.user_id": requestedData.user_id,
       };
-      console.log("111111111111111")
+      console.log("111111111111111");
       await this.footPlayerUtilityInst.updateOne(updateOneCondition, {
         status: FOOTPLAYER_STATUS.ADDED,
       });
@@ -818,7 +969,7 @@ class FootPlayerService {
         { $project: { sent_by: "$club.user_id" } },
       ]);
       if (clubRequestsInPending && clubRequestsInPending.length) {
-        console.log("inside clubRequestInPending")
+        console.log("inside clubRequestInPending");
         let updatedDoc = { status: FOOTPLAYER_STATUS.REJECTED };
         await this.footPlayerUtilityInst.updateMany(
           { $or: clubRequestsInPending },
@@ -839,14 +990,14 @@ class FootPlayerService {
         requestedData.user_id,
         { email: 1, first_name: 1 }
       );
-      console.log("playerrrrrr issss")
-      console.log(player)
+      console.log("playerrrrrr issss");
+      console.log(player);
       let clubAcademy = await this.utilityService.getClubDetails(
         requestedData.sent_by,
         { email: 1, name: 1 }
       );
-  console.log("clubAcademy issss");
-  console.log(clubAcademy);
+      console.log("clubAcademy issss");
+      console.log(clubAcademy);
       this.emailService.footPlayerInviteAccepted({
         email: player.email,
         name: player.first_name,
@@ -860,6 +1011,93 @@ class FootPlayerService {
     }
   }
 
+  // Accept foot coach request
+
+  async acceptFootCoachRequest(requestedData = {}) {
+    try {
+      await this.footcoachRequestValidator(requestedData);
+      let updateOneCondition = {
+        status: FOOTPLAYER_STATUS.PENDING,
+        sent_by: requestedData.sent_by,
+        "send_to.user_id": requestedData.user_id,
+      };
+      console.log("111111111111111");
+      await this.footCoachUtilityInst.updateOne(updateOneCondition, {
+        status: FOOTPLAYER_STATUS.ADDED,
+      });
+      let clubRequestsInPending = await this.footCoachUtilityInst.aggregate([
+        {
+          $match: {
+            "send_to.user_id": requestedData.user_id,
+            status: FOOTPLAYER_STATUS.PENDING,
+            is_deleted: false,
+          },
+        },
+        {
+          $lookup: {
+            from: "club_academy_details",
+            localField: "sent_by",
+            foreignField: "user_id",
+            as: "club_academy_detail",
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            club: {
+              $filter: {
+                input: "$club_academy_detail",
+                as: "element",
+                cond: { $eq: ["$$element.member_type", MEMBER.CLUB] },
+              },
+            },
+          },
+        },
+        { $unwind: { path: "$club" } },
+        { $project: { sent_by: "$club.user_id" } },
+      ]);
+      if (clubRequestsInPending && clubRequestsInPending.length) {
+        console.log("inside clubRequestInPending");
+        let updatedDoc = { status: FOOTPLAYER_STATUS.REJECTED };
+        await this.footPlayerUtilityInst.updateMany(
+          { $or: clubRequestsInPending },
+          updatedDoc
+        );
+      }
+      let serviceInst = new ConnectionService();
+      await serviceInst.followMember(
+        { sent_by: requestedData.sent_by, send_to: requestedData.user_id },
+        true
+      );
+      await serviceInst.followMember(
+        { sent_by: requestedData.user_id, send_to: requestedData.sent_by },
+        true
+      );
+
+      let player = await this.utilityService.getCoachDetails(
+        requestedData.user_id,
+        { email: 1, first_name: 1 }
+      );
+      console.log("playerrrrrr issss");
+      console.log(player);
+      let clubAcademy = await this.utilityService.getClubDetails(
+        requestedData.sent_by,
+        { email: 1, name: 1 }
+      );
+      console.log("clubAcademy issss");
+      console.log(clubAcademy);
+      this.emailService.footPlayerInviteAccepted({
+        email: player.email,
+        name: player.first_name,
+        from: clubAcademy.name,
+      });
+
+      return Promise.resolve();
+    } catch (e) {
+      console.log("Error in acceptFootplayerRequest() of FootPlayerService", e);
+      return Promise.reject(e);
+    }
+  }
   /**
    * validates requestedData for acceptFootplayerRequest
    *
@@ -910,7 +1148,50 @@ class FootPlayerService {
     }
     return Promise.resolve();
   }
-
+  // foot coach request validator
+  async footcoachRequestValidator(requestedData = {}) {
+    let current_user = await this.loginUtilityInst.findOne(
+      { user_id: requestedData.user_id, member_type: MEMBER.PLAYER },
+      { profile_status: 1 }
+    );
+    if (
+      current_user &&
+      current_user.profile_status &&
+      current_user.profile_status.status &&
+      current_user.profile_status.status != PROFILE_STATUS.VERIFIED
+    ) {
+      return Promise.reject(
+        new errors.ValidationFailed(RESPONSE_MESSAGE.PROFILE_NOT_VERIFIED)
+      );
+    }
+    let dataOfSentBy = await this.clubAcademyUtilityInst.findOne(
+      { user_id: requestedData.sent_by },
+      { member_type: 1 }
+    );
+    if (_.isEmpty(dataOfSentBy)) {
+      return Promise.reject(
+        new errors.NotFound(RESPONSE_MESSAGE.SENT_BY_USER_NOT_FOUND)
+      );
+    }
+    let footplayerRequest = await this.footCoachUtilityInst.findOne({
+      status: FOOTPLAYER_STATUS.PENDING,
+      sent_by: requestedData.sent_by,
+      "send_to.user_id": requestedData.user_id,
+    });
+    if (_.isEmpty(footplayerRequest)) {
+      return Promise.reject(
+        new errors.NotFound(RESPONSE_MESSAGE.FOOTPLAYER_REQUEST_NOT_FOUND)
+      );
+    }
+    if (
+      dataOfSentBy &&
+      dataOfSentBy.member_type &&
+      dataOfSentBy.member_type === MEMBER.CLUB
+    ) {
+      await this.isFootplayerOfOtherClub(requestedData.user_id);
+    }
+    return Promise.resolve();
+  }
   /**
    * reject footplayer request
    *
@@ -1177,6 +1458,7 @@ class FootPlayerService {
       }
       response.total = totalRecords;
       response.records = responseData;
+      console.log("total footplayer list issss", response);
       return Promise.resolve(response);
     } catch (error) {
       console.log(error);
@@ -1184,22 +1466,69 @@ class FootPlayerService {
     }
   }
 
+  //for coach
+  async listAllForCoach(paramas = {}) {
+    try {
+      let matchCriteria = this.getMatchCriteria(paramas);
+      const filterConditions = this._prepareFootplayerFilterCondition(
+        paramas.filters
+      );
 
+      let searchConditions = {};
 
+      if (paramas.filters.search) {
+        this.prepateSearchFilters(paramas, searchConditions);
+      }
 
+      const projection = this.prepareProjection();
 
+      let skipCount = (paramas.filters.page_no - 1) * paramas.filters.page_size;
 
-
-
-
-
-
-
-
-
-
-
-  
+      const aggPipes = this.prepareAggregatePipes(
+        matchCriteria,
+        skipCount,
+        paramas,
+        filterConditions,
+        searchConditions,
+        projection
+      );
+      let data = await this.footCoachUtilityInst.aggregate(aggPipes);
+      let responseData = [],
+        totalRecords = 0;
+      if (data && data.length && data[0] && data[0].data) {
+        let sortedData = await this.sortByPositionPriority(
+          data[0].data,
+          paramas.filters.position
+        );
+        responseData = new ClubFootPlayersResponseMapping().map(
+          sortedData,
+          paramas.filters.footplayers
+        );
+        if (
+          data[0].data.length &&
+          data[0].total_data &&
+          data[0].total_data.length &&
+          data[0].total_data[0].count
+        ) {
+          totalRecords = data[0].total_data[0].count;
+        }
+      }
+      let response = {};
+      if (paramas.filters.footplayers === 1) {
+        matchCriteria.status = FOOTPLAYER_STATUS.ADDED;
+        response.footplayers = await this.footPlayerUtilityInst.countList(
+          matchCriteria
+        );
+      }
+      response.total = totalRecords;
+      response.records = responseData;
+      console.log("total coach list issss", response);
+      return Promise.resolve(response);
+    } catch (error) {
+      console.log(error);
+      return Promise.reject(error);
+    }
+  }
   prepareAggregatePipes(
     matchCriteria,
     skipCount,

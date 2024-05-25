@@ -8,9 +8,9 @@ class MemberType {
   static get ACADEMY() {
     return "academy";
   }
-  static get COACHE() {
+  static get coache() {
     return "coache";
   }
 }
 
-module.exports = MemberType
+module.exports = MemberType;
