@@ -1721,7 +1721,42 @@ class FootPlayerService {
       is_deleted: false,
     };
   }
+  
 
+  async deleteRequestForCoach(requestId, userId) {
+    try {
+      const $where = {
+        id: requestId,
+        sent_by: userId,
+        is_deleted: false,
+      };
+
+      let request = await this.footCoachUtilityInst.findOne($where);
+
+      if (request) {
+        let date = Date.now();
+        await this.footCoachUtilityInst.updateOne($where, {
+          is_deleted: true,
+          deleted_at: date,
+        });
+        let reportCardCondition = {
+          sent_by: userId,
+          send_to: request.send_to.user_id,
+          status: REPORT_CARD_STATUS.DRAFT,
+        };
+        await this.reportCardUtilityInst.updateOne(reportCardCondition, {
+          is_deleted: true,
+          deleted_at: date,
+        });
+        return Promise.resolve();
+      }
+
+      throw new errors.NotFound(RESPONSE_MESSAGE.FOOTMATE_REQUEST_NOT_FOUND);
+    } catch (error) {
+      console.log(error);
+      return Promise.reject(error);
+    }
+  }
   async deleteRequest(requestId, userId) {
     try {
       const $where = {

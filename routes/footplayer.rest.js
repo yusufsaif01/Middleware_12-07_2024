@@ -820,4 +820,27 @@ module.exports = (router) => {
       responseHandler(req, res, Promise.reject(e));
     }
   });
+    router.delete(
+      "/deleteFootCoach/:id",
+      checkAuthToken,
+      async (req, res, next) => {
+        try {
+          if (!req.params.id) {
+            return Promise.reject(
+              new errors.ValidationFailed(RESPONSE_MESSAGE.USER_ID_REQUIRED)
+            );
+          }
+          let requestId = req.params.id;
+
+          responseHandler(
+            req,
+            res,
+            footPlayerInst.deleteRequestForCoach(requestId, req.authUser.user_id)
+          );
+        } catch (e) {
+          console.log(e);
+          responseHandler(req, res, Promise.reject(e));
+        }
+      }
+    );
 };
