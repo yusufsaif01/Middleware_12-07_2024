@@ -26,6 +26,9 @@ class ResponseMessage {
   static get USER_NOT_FOUND() {
     return "User not found";
   }
+  static get OTP_NOT_FOUND() {
+    return "Otp not found";
+  }
   static get MEMBER_NOT_FOUND() {
     return "Member not found";
   }

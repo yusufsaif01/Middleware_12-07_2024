@@ -15,7 +15,7 @@ module.exports = {
     },
     name: {
       type: String,
-      required: true,
+     
     },
     otp: {
       type: String,

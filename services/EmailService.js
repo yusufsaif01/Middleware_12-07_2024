@@ -9,18 +9,18 @@ const {
 } = require("@azure/communication-email");
 class EmailService {
   async forgotPassword(email, password_reset_link, name) {
-    await this.sendMail("forgotPassword", {
+    await this.sendMail("", {
       email: email,
       password_reset_link: password_reset_link,
       name,
     });
   }
 
-  async emailVerification(email, activation_link, name) {
-    await this.sendMail("emailVerification", {
+  async emailVerification(email, otp) {
+    console.log("otp before inset in sendmail",otp)
+    await this.sendMail("sendOtpEmail", {
       email: email,
-      activation_link: activation_link,
-      name: name,
+      otp: otp,
     });
   }
 

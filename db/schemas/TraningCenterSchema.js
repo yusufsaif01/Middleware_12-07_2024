@@ -44,8 +44,12 @@ module.exports = {
     },
     opening_days: [
       {
-        item_id: Number,
-        item_text: String,
+        item_id: {
+          type: Number,
+        },
+        item_text: {
+          type: String,
+        },
       },
     ],
     is_deleted: {

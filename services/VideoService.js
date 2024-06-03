@@ -109,7 +109,7 @@ module.exports = class VideoService {
       [POST_TYPE.MATCH]: 1,
     },
     [ROLE.coache]: {
-      [POST_TYPE.TIMELINE]: 100,
+      [POST_TYPE.TIMELINE]: 10,
     },
   };
 

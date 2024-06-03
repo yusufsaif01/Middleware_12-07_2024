@@ -19,7 +19,7 @@ class OtpService {
     this.emailService = new EmailService();
   }
 
-  async otp_generate(email, account_active_url, name) {
+  async otp_generate(email, name) {
     try {
       // Function to generate OTP
 
@@ -36,8 +36,6 @@ class OtpService {
       };
       const returnData = await this.otpUtilityInst.insertOtp(requetData);
       this.emailService.emailVerification(email, OTP);
-      console.log("data insert in otp schema");
-      console.log(returnData);
       return OTP;
     } catch (e) {
       console.log(e);
@@ -50,23 +48,29 @@ class OtpService {
       const returnData = await this.otpUtilityInst.otpVerify(bodyObj);
 
       if (!returnData) {
-        console.log("insde nulll");
-        throw new errors.NotFound();
-      } else {
-        console.log("gdsg", returnData);
-        //  const obj = {}
-        //  obj.username = returnData.email
-        //  obj.status= 'pending'
-        //  const fetchtken = await this.loginUtility.findOneForToken(obj)
-        //  console.log("fpttt",fetchtken)
-        // returnData[account_activate_token] = fetchtken;
-        //   console.log("final",returnData)
+        return Promise.reject(
+          new errors.OtpNotMatch(ResponseMessage.OTP_NOT_FOUND)
+         
+        );
+      }
+      return returnData;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  async reSendOtp(bodyObj) {
+    try {
+      console.log("objectBody is=>", bodyObj);
+      const returnData = await this.otpUtilityInst.otpVerify(bodyObj);
+
+      if (returnData) {
         return returnData;
       }
 
-      // throw new errors.Unauthorized("otp not found");
+      throw new errors.OtpNotMatch(ResponseMessage.OTP_NOT_FOUND);
     } catch (error) {
-      console.log("error", error);
+      return Promise.reject(error);
     }
   }
 }

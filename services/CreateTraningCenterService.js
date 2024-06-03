@@ -6,6 +6,7 @@ const TraningCenterUtility = require("../db/utilities/TraningCenterUtility");
 const coacheUtility = require("../db/utilities/CoacheUtility");
 const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
 const AuthUtility = require("../db/utilities/AuthUtility");
+const FootCoachUtilityInst= require("../db/utilities/FootCoachUtility")
 const EmailService = require("./EmailService");
 const config = require("../config");
 const _ = require("lodash");
@@ -25,6 +26,7 @@ class CreateTraningCenterService {
    * @memberof UserRegistrationService
    */
   constructor() {
+    this.footCoachUtilityInst = new FootCoachUtilityInst();
     this.playerUtilityInst = new PlayerUtility();
     this.coacheUtility = new coacheUtility();
     this.traningCenterUtility = new TraningCenterUtility();
@@ -125,7 +127,7 @@ class CreateTraningCenterService {
       console.log("inside getcoacheList ===========>");
       console.log("id is", id);
 
-      let data = await this.footPlayerUtilityInst.find({ sent_by: id });
+      let data = await this.footCoachUtilityInst.find({ sent_by: id });
       return data;
     } catch (e) {
       console.log("Error in getList() of AchievementService", e);

@@ -1,4 +1,4 @@
-module.exports = ({ email, otp }) => {
+module.exports = ({ email, otp, activation_link, name }) => {
   return {
     to: email,
     subject: "Website access request",

@@ -99,6 +99,20 @@ class BaseUtility {
     }
   }
 
+  async insertOtp(requestData = {}) {
+    try {
+      if (_.isEmpty(this.model)) {
+        await this.getModel();
+      }
+      const result = await this.model.create(requestData);
+      return result;
+    } catch (e) {
+      console.log(
+        `Error in insert() while inserting data for ${this.schemaObj.schemaName} :: ${e}`
+      );
+      throw e;
+    }
+  }
   async insert(record = {}) {
     try {
       if (_.isEmpty(this.model)) {

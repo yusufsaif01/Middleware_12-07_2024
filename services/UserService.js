@@ -225,6 +225,7 @@ class UserService extends BaseService {
       let clubAcademyConditions = this._prepareClubAcademySearchCondition(
         requestedData.filter
       );
+      console.log("final filter after prepare is==>", playerConditions);
       let playerProjection = {
         first_name: 1,
         last_name: 1,
@@ -326,7 +327,7 @@ class UserService extends BaseService {
         }
       }
       let response = { total: totalRecords, records: responseData };
-      console.log("response is==>");
+      console.log("final data in response is ==>");
       console.log(response);
       return response;
     } catch (e) {
@@ -912,6 +913,7 @@ class UserService extends BaseService {
   _preparePlayerSearchCondition(filters = {}) {
     let condition = {};
     let filterArr = [];
+    console.log("filters in preparePlayerSearchCondition is ==>",filters)
     if (filters.search) {
       filters.search = filters.search.trim();
       filterArr.push({ full_name: new RegExp(filters.search, "i") });
@@ -928,6 +930,7 @@ class UserService extends BaseService {
         $or: filterArr,
       };
     }
+    console.log("condition for filter search is ==>",condition)
     return condition;
   }
 }

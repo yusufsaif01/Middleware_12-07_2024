@@ -355,7 +355,7 @@ module.exports = (footer) => {
                            word-wrap: normal;
                            "
                            >
-                           Copyright @ 2023, ${footer.appName}, All
+                           Copyright @ 2024, ${footer.appName}, All
                            rights are reserved.
                         </h6>
                      </th>

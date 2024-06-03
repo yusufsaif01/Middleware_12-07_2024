@@ -15,6 +15,7 @@ class ResponseHandler {
 
   errorHandler(data) {
     console.log("inside error handlere")
+    console.log("data is",data)
     return Promise.reject(data);
   }
 }

@@ -59,15 +59,21 @@ module.exports = (router) => {
   //otp verify
 
   router.get("/otp/verify", function (req, res) {
-    console.log(req.body.otp);
-    console.log(req.body.email);
 
     const obj = {};
     obj.email = req.query.email;
     obj.otp = req.query.otp;
-
+    
     const serviceInst = new OtpService();
     responseHandler(req, res, serviceInst.otpVerify(obj));
+  });
+  router.get("/resendOtp", function (req, res) {
+    
+    const email = req.query.email;
+    const name= req.query.name
+   
+    const serviceInst = new OtpService();
+    responseHandler(req, res, serviceInst.otp_generate(email,name));
   });
 
   // for  create traning center

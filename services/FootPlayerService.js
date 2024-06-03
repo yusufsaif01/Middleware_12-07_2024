@@ -253,6 +253,7 @@ class FootPlayerService {
       let filterConditions = this._preparecoacheFilterCondition(
         requestedData.filterConditions
       );
+      console.log("final filter condition is==>",filterConditions)
       let data = await this.loginUtilityInst.aggregate([
         { $match: { is_deleted: false, member_type: MEMBER.coache } },
         { $project: { user_id: 1, profile_status: 1, _id: 0 } },
@@ -297,11 +298,12 @@ class FootPlayerService {
             as: "footplayerDocument",
           },
         },
+        { $match: filterConditions },
       ]);
       console.log("first data is");
       console.log(data);
       if (_.isEmpty(data)) {
-        console.log("inside -is empty");
+       
         filterConditions = this._prepareClubAcademyFilterCondition(
           requestedData.filterConditions
         );
@@ -349,16 +351,16 @@ class FootPlayerService {
           { $match: filterConditions },
         ]);
       }
-      console.log("before send in fpslrm", data);
+    
       data = new coacheSearchListResponseMapper().map(data);
-      console.log("fetch data is");
-      console.log(data);
+
       return { total: data.length, records: data };
     } catch (e) {
       console.log("Error in getPlayerList() of FootPlayerService", e);
       return Promise.reject(e);
     }
   }
+
   /**
    * prepare filter condition for player
    *
@@ -366,6 +368,7 @@ class FootPlayerService {
    * @returns
    * @memberof FootPlayerService
    */
+
   _preparecoacheFilterCondition(filterConditions = {}) {
     let condition = {};
     let filterArr = [];
@@ -374,13 +377,20 @@ class FootPlayerService {
         filterArr.push({ "coache_detail.email": filterConditions.email });
       }
       if (filterConditions.phone) {
-        filterArr.push({ "coache.phone": filterConditions.phone });
+        filterArr.push({ "coache_details.phone": filterConditions.phone });
       }
+       if (filterConditions.name) {
+         filterArr.push({
+           "coache_detail.first_name": new RegExp(filterConditions.name, "i"),
+         });
+       }
       if (filterConditions.name) {
-        filterArr.push({ "coache.first_name": filterConditions.name });
+        filterArr.push({
+          "coache_detail.last_name": new RegExp(filterConditions.name, "i"),
+        });
       }
       condition = {
-        $and: filterArr,
+        $or: filterArr,
       };
     }
     return filterArr.length ? condition : {};
@@ -389,6 +399,7 @@ class FootPlayerService {
   _preparePlayerFilterCondition(filterConditions = {}) {
     let condition = {};
     let filterArr = [];
+    console.log("data in _preparePlayerFilterCondition is=>", filterConditions);
     if (filterConditions) {
       if (filterConditions.email) {
         filterArr.push({ "player_detail.email": filterConditions.email });
@@ -397,10 +408,19 @@ class FootPlayerService {
         filterArr.push({ "player_detail.phone": filterConditions.phone });
       }
       if (filterConditions.name) {
-        filterArr.push({ "player_detail.first_name": filterConditions.name });
+        filterArr.push({
+          "player_detail.first_name": new RegExp(filterConditions.name, "i"),
+        });
       }
+
+      if (filterConditions.name) {
+        filterArr.push({
+          "player_detail.last_name": new RegExp(filterConditions.name, "i"),
+        });
+      }
+
       condition = {
-        $and: filterArr,
+        $or: filterArr,
       };
     }
     return filterArr.length ? condition : {};
@@ -1721,7 +1741,6 @@ class FootPlayerService {
       is_deleted: false,
     };
   }
-  
 
   async deleteRequestForCoach(requestId, userId) {
     try {
