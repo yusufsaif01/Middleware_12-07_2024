@@ -246,8 +246,7 @@ module.exports = (router) => {
     footplayerValidator.footplayerRequestListValidation,
     function (req, res) {
       const role = checkRole([ROLE.PLAYER, ROLE.coache]);
-      console.log("role is 000000000000000000", role)
-       console.log("req is 000000000000000000", req.authUser.member_type);
+    
       let paginationOptions = {
         page_no: req.query && req.query.page_no ? req.query.page_no : 1,
         limit:

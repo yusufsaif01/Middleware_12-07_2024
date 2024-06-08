@@ -186,7 +186,7 @@ class ConnectionService {
 
     async acceptFootMateRequest(requestedData = {}) {
         try {
-            console.log("000000000000")
+          
             let sent_by = await this.footMateRequestValidator(requestedData);
             console.log("111111111")
             let updatedDoc = { status: CONNECTION_REQUEST.ACCEPTED, is_deleted: true, deleted_at: Date.now() };

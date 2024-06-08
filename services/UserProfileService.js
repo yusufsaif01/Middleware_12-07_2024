@@ -2,6 +2,7 @@ const config = require("../config");
 const AuthUtility = require("../db/utilities/AuthUtility");
 const UserUtility = require("../db/utilities/UserUtility");
 const PlayerUtility = require("../db/utilities/PlayerUtility");
+const CoachUtility = require("../db/utilities/CoacheUtility");
 const LoginUtility = require("../db/utilities/LoginUtility");
 const ClubAcademyUtility = require("../db/utilities/ClubAcademyUtility");
 const errors = require("../errors");
@@ -41,6 +42,7 @@ class UserProfileService {
     this.authUtilityInst = new AuthUtility();
     this.userUtilityInst = new UserUtility();
     this.playerUtilityInst = new PlayerUtility();
+    this.coachUtilityInst = new CoachUtility();
     this.clubAcademyUtilityInst = new ClubAcademyUtility();
     this.countryUtilityInst = new CountryUtility();
     this.stateUtilityInst = new StateUtility();
@@ -414,6 +416,16 @@ class UserProfileService {
         requestedData.updateValues
       );
       const { avatar_url } = await this.playerUtilityInst.findOne(
+        { user_id: requestedData.id },
+        { avatar_url: 1 }
+      );
+      res.avatar_url = avatar_url;
+    } else if (requestedData.member_type == MEMBER.coache) {
+      await this.coachUtilityInst.updateOne(
+        { user_id: requestedData.id },
+        requestedData.updateValues
+      );
+      const { avatar_url } = await this.coachUtilityInst.findOne(
         { user_id: requestedData.id },
         { avatar_url: 1 }
       );

@@ -188,9 +188,9 @@ class BaseUtility {
 
   async findOneAndUpdate(conditions = {}, updatedDoc = {}, options = {}) {
     try {
-      console.log("condition is=>", conditions)
+      console.log("condition is=>", conditions);
       let entity = await this.findOne(conditions, null, options);
-      console.log("entity is=>",entity)
+      console.log("entity is=>", entity);
       if (!entity) {
         return Promise.reject(new errors.NotFound());
       }
@@ -277,6 +277,26 @@ class BaseUtility {
     }
   }
 
+  async findOneForPersonal(conditions = {}, projection = [], options = {}) {
+    try {
+      if (_.isEmpty(this.model)) {
+        await this.getModel();
+      }
+     
+      conditions.deleted_at = { $exists: false };
+      projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
+      let result = await this.model.findOne(conditions);
+      
+      Object.assign({member_type : 'player' });
+      console.log("result isssss for personal professional", result);
+      return result;
+    } catch (e) {
+      console.log(
+        `Error in findOne() while fetching data for ${this.schemaObj.schemaName} :: ${e}`
+      );
+      throw e;
+    }
+  }
   async findOneForCoachProfessional(
     conditions = {},
     projection = [],
@@ -286,7 +306,7 @@ class BaseUtility {
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-      console.log("inside finddddddddddddddd", conditions);
+    
       conditions.deleted_at = { $exists: false };
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
       let result = await this.model.findOne(conditions);
@@ -306,7 +326,7 @@ class BaseUtility {
       if (_.isEmpty(this.model)) {
         await this.getModel();
       }
-      console.log("inside finddddddddddddddd", conditions);
+   
       conditions.deleted_at = { $exists: false };
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
       let result = await this.model.findOne(conditions, projection, options);

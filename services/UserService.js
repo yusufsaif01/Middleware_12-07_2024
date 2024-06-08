@@ -364,13 +364,16 @@ class UserService extends BaseService {
 
           let data = {},
             projection = {};
-          console.log("requestedData._category", requestedData._category);
+          
           projection = await this.getProfileProjection(requestedData._category);
           if (loginDetails.member_type == MEMBER.PLAYER) {
-            data = await this.playerUtilityInst.findOne(
+            data = await this.playerUtilityInst.findOneForPersonal(
               { user_id: user.user_id },
               projection
             );
+            data.player_type = 'player';
+            console.log("find one for personal professional is", data)
+            return data
           } else if (loginDetails.member_type == MEMBER.coache) {
             console.log("55555555555555555")
             data = await this.coacheUtilityInst.findOneForCoachProfessional(
@@ -453,6 +456,7 @@ class UserService extends BaseService {
         league_other: 1,
         association: 1,
         association_other: 1,
+        member_type:1,
         _id: 0,
       };
     }
