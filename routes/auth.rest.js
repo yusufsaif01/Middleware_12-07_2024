@@ -67,6 +67,16 @@ module.exports = (router) => {
     const serviceInst = new OtpService();
     responseHandler(req, res, serviceInst.otpVerify(obj));
   });
+
+   router.get("/otpForPassword/verify", function (req, res) {
+     const obj = {};
+    
+     obj.otp = req.query.otp;
+
+     const serviceInst = new OtpService();
+     responseHandler(req, res, serviceInst.otpVerifyForPasswordVerify(obj));
+   });
+
   router.get("/resendOtp", function (req, res) {
     
     const email = req.query.email;
@@ -75,6 +85,7 @@ module.exports = (router) => {
     const serviceInst = new OtpService();
     responseHandler(req, res, serviceInst.otp_generate(email,name));
   });
+
 
   // for  create traning center
 
@@ -318,14 +329,16 @@ module.exports = (router) => {
    */
   router.post(
     "/reset-password",
-    checkTokenForAccountActivation,
+   // checkTokenForAccountActivation,
     function (req, res) {
       const authServiceInst = new AuthService();
+      console.log("userid 00", req.body.userid)
+      console.log("confiorm password", req.body.confirmPassword);
       responseHandler(
         req,
         res,
         authServiceInst.resetPassword(
-          req.authUser,
+          req.body.userid,
           req.body.password,
           req.body.confirmPassword
         )

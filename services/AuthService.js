@@ -19,7 +19,7 @@ const ACTIVITY = require("../constants/Activity");
 const redisServiceInst = require("../redis/RedisService");
 const UtilityService = require("./UtilityService");
 const ProfileStatus = require("../constants/ProfileStatus");
-
+const OtpService = require("./OtpService");
 class AuthService {
   constructor() {
     this.authUtilityInst = new AuthUtility();
@@ -246,12 +246,19 @@ class AuthService {
 
         user_name = await this.getProfileName(loginDetails, user_name);
 
-        await this.emailService.forgotPassword(
-          email,
-          resetPasswordURL,
-          user_name
-        );
-        return Promise.resolve();
+         const serviceInst = new OtpService();
+         const OTP = await serviceInst.otp_generate_for_forgot_password(
+           email,
+           resetPasswordURL,
+           loginDetails.first_name || loginDetails.name
+         );
+
+      //  await this.emailService.forgotPassword(
+       //   email,
+      //    resetPasswordURL,
+      //    user_name
+      //  );
+        return Promise.resolve({ userId: loginDetails.user_id });
       }
       throw new errors.Unauthorized(RESPONSE_MESSAGE.USER_NOT_REGISTERED);
     } catch (err) {
@@ -417,16 +424,17 @@ class AuthService {
     }
   }
 
-  async resetPassword(tokenData, new_password, confirmPassword) {
+  async resetPassword(userId, new_password, confirmPassword) {
     try {
+      console.log("user id in middleware is->",userId)
       await this.validateCreatePassword(
-        tokenData,
+      
         new_password,
         confirmPassword
       );
 
       let loginDetails = await this.loginUtilityInst.findOne({
-        user_id: tokenData.user_id,
+        user_id: userId,
       });
       if (loginDetails) {
         if (loginDetails.status === ACCOUNT.BLOCKED) {
@@ -444,10 +452,10 @@ class AuthService {
           { user_id: loginDetails.user_id },
           { password: password, forgot_password_token: "" }
         );
-        await redisServiceInst.deleteByKey(
-          `keyForForgotPassword${tokenData.forgot_password_token}`
-        );
-        await redisServiceInst.clearAllTokensFromCache(tokenData.user_id);
+      //  await redisServiceInst.deleteByKey(
+       //   `keyForForgotPassword${tokenData.forgot_password_token}`
+       // );
+       // await redisServiceInst.clearAllTokensFromCache(tokenData.user_id);
         let profileName = "";
         profileName = await this.getProfileName(loginDetails, profileName);
         await this.emailService.changePassword(
@@ -463,12 +471,8 @@ class AuthService {
     }
   }
 
-  validateCreatePassword(token, password, confirmPassword) {
-    if (!token) {
-      return Promise.reject(
-        new errors.ValidationFailed(RESPONSE_MESSAGE.TOKEN_REQUIRED)
-      );
-    }
+  validateCreatePassword( password, confirmPassword) {
+   
 
     if (!password) {
       return Promise.reject(

@@ -16,7 +16,7 @@ const footPlayerInviteAccepted = require("./footPlayerInviteAccepted");
 const postEmailConfirmation = require("./postEmailConfirmation");
 const reportCardAdded = require("./reportCardAddedMailTemplate");
 const sendOtpEmail = require("./sendOtpEmailTemplate");
-
+const forgotPasswordOtp = require("./forgotPasswordOtpTemplate")
 /** Admin */
 const employmentContractApprovalAdmin = require('./employmentContractApprovalTemplateAdmin');
 const employmentContractDisapprovalAdmin = require('./employmentContractDisapprovalTemplateAdmin');
@@ -41,6 +41,7 @@ module.exports = {
   footPlayerInviteAccepted,
   reportCardAdded,
   sendOtpEmail,
+  forgotPasswordOtp,
 
   /** Admin */
   employmentContractApprovalAdmin,

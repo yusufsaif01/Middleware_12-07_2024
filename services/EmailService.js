@@ -8,11 +8,12 @@ const {
   KnownEmailSendStatus,
 } = require("@azure/communication-email");
 class EmailService {
-  async forgotPassword(email, password_reset_link, name) {
-    await this.sendMail("", {
+  async forgotPassword(email, otp) {
+    console.log("otp and email is=>", email,otp);
+    await this.sendMail("forgotPasswordOtp", {
       email: email,
-      password_reset_link: password_reset_link,
-      name,
+      otp: otp,
+    
     });
   }
 

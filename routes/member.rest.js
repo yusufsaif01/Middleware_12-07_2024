@@ -536,7 +536,7 @@ module.exports = (router) => {
  *     }
  * 
  */
-    router.delete('/member/delete/:user_id', checkAuthToken, function (req, res) {
+    router.delete('/member/delete/:user_id', function (req, res) {
         try {
             if (!req.params.user_id) {
                 return Promise.reject(new errors.ValidationFailed(

@@ -7,7 +7,7 @@ const PostType = require('../../constants/PostType');
 class PostValidator {
     async addPostAPIValidation(req, res, next) {
         const schema = Joi.object().keys({
-            "text": Joi.string().trim().min(1).max(350),
+            "text": Joi.string().trim().min(1).max(3000),
             "media": Joi.any()
         });
         try {

@@ -188,7 +188,9 @@ class BaseUtility {
 
   async findOneAndUpdate(conditions = {}, updatedDoc = {}, options = {}) {
     try {
+      console.log("condition is=>", conditions)
       let entity = await this.findOne(conditions, null, options);
+      console.log("entity is=>",entity)
       if (!entity) {
         return Promise.reject(new errors.NotFound());
       }

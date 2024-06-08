@@ -199,7 +199,7 @@ module.exports = ({ email, password_reset_link, name }) => {
                         vertical-align: top;
                         word-wrap: break-word;
                         ">
-                                <a href="${password_reset_link}" target="_blank" style="
+                                <a href="#"  style="
                            color: #fff;
                            cursor: pointer;
                            display: inline-block;

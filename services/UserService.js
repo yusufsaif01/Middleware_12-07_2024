@@ -635,10 +635,12 @@ class UserService extends BaseService {
 
   async delete(user_id) {
     try {
+      console.log("user id is=>",user_id)
       let loginDetails = await this.loginUtilityInst.findOne({
         user_id: user_id,
       });
       if (loginDetails) {
+        console.log("login details are===>",loginDetails)
         let date = Date.now();
         await this.loginUtilityInst.findOneAndUpdate(
           { user_id: user_id },
@@ -646,6 +648,7 @@ class UserService extends BaseService {
         );
         await this.manageConnection(user_id);
         if (loginDetails.member_type === MEMBER.PLAYER) {
+          console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
           await this.playerUtilityInst.findOneAndUpdate(
             { user_id: user_id },
             { deleted_at: date }
@@ -656,7 +659,7 @@ class UserService extends BaseService {
             { deleted_at: date }
           );
         }
-        await redisServiceInst.clearAllTokensFromCache(user_id);
+        //await redisServiceInst.clearAllTokensFromCache(user_id);
         return Promise.resolve();
       }
       throw new errors.NotFound(RESPONSE_MESSAGE.USER_NOT_FOUND);
@@ -668,10 +671,12 @@ class UserService extends BaseService {
 
   async manageConnection(user_id) {
     try {
+      console.log("inside manageconnections is=>",user_id)
       let connection_of_user = await this.connectionUtilityInst.findOne({
         user_id: user_id,
       });
       if (connection_of_user) {
+        console.log("inside connection_of_user is")
         if (connection_of_user.footmates) {
           await this.connectionUtilityInst.updateMany(
             { user_id: { $in: connection_of_user.footmates } },

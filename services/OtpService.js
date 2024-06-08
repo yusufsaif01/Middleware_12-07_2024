@@ -43,6 +43,30 @@ class OtpService {
     }
   }
 
+  async otp_generate_for_forgot_password(email, name) {
+    try {
+      // Function to generate OTP
+
+      let digits = "0123456789";
+      let OTP = "";
+      let len = digits.length;
+      for (let i = 0; i < 4; i++) {
+        OTP += digits[Math.floor(Math.random() * len)];
+      }
+      const requetData = {
+        email: email,
+        otp: OTP,
+        name: name,
+      };
+      const returnData = await this.otpUtilityInst.insertOtp(requetData);
+      this.emailService.forgotPassword(email, OTP);
+      return OTP;
+    } catch (e) {
+      console.log(e);
+      return Promise.reject(e);
+    }
+  }
+
   async otpVerify(bodyObj) {
     try {
       const returnData = await this.otpUtilityInst.otpVerify(bodyObj);
@@ -50,7 +74,21 @@ class OtpService {
       if (!returnData) {
         return Promise.reject(
           new errors.OtpNotMatch(ResponseMessage.OTP_NOT_FOUND)
-         
+        );
+      }
+      return returnData;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  async otpVerifyForPasswordVerify(bodyObj) {
+    try {
+      const returnData = await this.otpUtilityInst.otpVerify(bodyObj);
+
+      if (!returnData) {
+        return Promise.reject(
+          new errors.OtpNotMatch(ResponseMessage.OTP_NOT_FOUND)
         );
       }
       return returnData;
