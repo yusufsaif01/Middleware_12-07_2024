@@ -10,6 +10,7 @@ const FootmateRequestListResponseMapper = require("../dataModels/responseMapper/
 const MutualFootmateListResponseMapper = require("../dataModels/responseMapper/MutualFootmateListResponseMapper");
 const FootmateListResponseMapper = require("../dataModels/responseMapper/FootmateListResponseMapper");
 const FootPlayerUtility = require('../db/utilities/FootPlayerUtility');
+const FootCoachUtility = require("../db/utilities/FootCoachUtility");
 const FOOTPLAYER_STATUS = require('../constants/FootPlayerStatus');
 const moment = require('moment');
 const PostUtility = require('../db/utilities/PostUtility');
@@ -22,6 +23,7 @@ class ConnectionService {
         this.connectionRequestUtilityInst = new ConnectionRequestUtility();
         this.loginUtilityInst = new LoginUtility();
         this.footPlayerUtilityInst = new FootPlayerUtility();
+        this.footCoachUtilityInst = new FootCoachUtility();
         this.postUtilityInst = new PostUtility();
     }
 
@@ -378,82 +380,230 @@ class ConnectionService {
                     followings = connection_of_user.followings.length;
             }
             let club_footplayer_requests = 0, academy_footplayer_requests = 0;
-            let footplayer_requests = await this.footPlayerUtilityInst.aggregate([
-                { $match: { "send_to.user_id": requestedData.user_id, status: FOOTPLAYER_STATUS.PENDING, is_deleted: false } },
-                { $lookup: { from: "club_academy_details", localField: "sent_by", foreignField: "user_id", as: "club_academy_detail" } },
-                { $unwind: { path: "$club_academy_detail" } },
-                {
-                    $group:
-                    {
-                        _id: "$send_to.user_id",
-                        club_request: {
-                            $push: {
-                                $cond: {
-                                    if: { $eq: ["$club_academy_detail.member_type", MEMBER.CLUB] },
-                                    then: "$club_academy_detail",
-                                    else: null,
-                                }
-                            }
+            console.log("requested data is==>", requestedData);
+          const userType = await this.loginUtilityInst.find({
+            user_id: requestedData.user_id,
+          });
+            const UserT=userType.map(item=>item.member_type).toString()
+            console.log("logindetails data issss", UserT);
+            if (UserT === 'coache') {
+                let footplayer_requests =
+                    await this.footCoachUtilityInst.aggregate([
+                        {
+                            $match: {
+                                "send_to.user_id": requestedData.user_id,
+                                status: FOOTPLAYER_STATUS.PENDING,
+                                is_deleted: false,
+                            },
                         },
-                        academy_request: {
-                            $push: {
-                                $cond: {
-                                    if: { $eq: ["$club_academy_detail.member_type", MEMBER.ACADEMY] },
-                                    then: "$club_academy_detail",
-                                    else: null,
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    $project: {
-                        user_id: 1, club_request: {
-                            $size: {
-                                $filter: {
-                                    input: "$club_request", as: "element",
-                                    cond: {
-                                        $ne: ["$$element", null]
-                                    }
-                                }
-                            }
+                        {
+                            $lookup: {
+                                from: "club_academy_details",
+                                localField: "sent_by",
+                                foreignField: "user_id",
+                                as: "club_academy_detail",
+                            },
                         },
-                        academy_request: {
-                            $size: {
-                                $filter: {
-                                    input: "$academy_request", as: "element",
-                                    cond: {
-                                        $ne: ["$$element", null]
-                                    }
-                                }
-                            }
-                        }
-                    }
+                        { $unwind: { path: "$club_academy_detail" } },
+                        {
+                            $group: {
+                                _id: "$send_to.user_id",
+                                club_request: {
+                                    $push: {
+                                        $cond: {
+                                            if: {
+                                                $eq: [
+                                                    "$club_academy_detail.member_type",
+                                                    MEMBER.CLUB,
+                                                ],
+                                            },
+                                            then: "$club_academy_detail",
+                                            else: null,
+                                        },
+                                    },
+                                },
+                                academy_request: {
+                                    $push: {
+                                        $cond: {
+                                            if: {
+                                                $eq: [
+                                                    "$club_academy_detail.member_type",
+                                                    MEMBER.ACADEMY,
+                                                ],
+                                            },
+                                            then: "$club_academy_detail",
+                                            else: null,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            $project: {
+                                user_id: 1,
+                                club_request: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$club_request",
+                                            as: "element",
+                                            cond: {
+                                                $ne: ["$$element", null],
+                                            },
+                                        },
+                                    },
+                                },
+                                academy_request: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$academy_request",
+                                            as: "element",
+                                            cond: {
+                                                $ne: ["$$element", null],
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    ]);
+
+                if (
+                    footplayer_requests &&
+                    footplayer_requests.length > 0 &&
+                    footplayer_requests[0]
+                ) {
+                    club_footplayer_requests =
+                        footplayer_requests[0].club_request || 0;
+                    academy_footplayer_requests =
+                        footplayer_requests[0].academy_request || 0;
                 }
-            ]);
-            if (footplayer_requests && footplayer_requests.length > 0 && footplayer_requests[0]) {
-                club_footplayer_requests = footplayer_requests[0].club_request || 0;
-                academy_footplayer_requests = footplayer_requests[0].academy_request || 0;
-            }
 
-            const video_count = await this.postUtilityInst.countList({
-              "media.media_type": POST_MEDIA.VIDEO,
-              "status": POST_STATUS.PUBLISHED,
-              "is_deleted": false,
-              "posted_by": requestedData.user_id,
-            });
+                const video_count = await this.postUtilityInst.countList({
+                    "media.media_type": POST_MEDIA.VIDEO,
+                    status: POST_STATUS.PUBLISHED,
+                    is_deleted: false,
+                    posted_by: requestedData.user_id,
+                });
 
-            let response = {
-                total_requests: footmate_requests + club_footplayer_requests + academy_footplayer_requests,
-                footmate_requests: footmate_requests,
-                club_footplayer_requests: club_footplayer_requests,
-                academy_footplayer_requests: academy_footplayer_requests,
-                video_count: video_count,
-                footmates: footmates,
-                followers: followers,
-                followings: followings
+                let response = {
+                    total_requests:
+                        footmate_requests +
+                        club_footplayer_requests +
+                        academy_footplayer_requests,
+                    footmate_requests: footmate_requests,
+                    club_footplayer_requests: club_footplayer_requests,
+                    academy_footplayer_requests: academy_footplayer_requests,
+                    video_count: video_count,
+                    footmates: footmates,
+                    followers: followers,
+                    followings: followings,
+                };
+                return Promise.resolve(response);
             }
-            return Promise.resolve(response);
+            else {
+                let footplayer_requests = await this.footPlayerUtilityInst.aggregate([
+                    {
+                        $match: {
+                            "send_to.user_id": requestedData.user_id,
+                            status: FOOTPLAYER_STATUS.PENDING,
+                            is_deleted: false,
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: "club_academy_details",
+                            localField: "sent_by",
+                            foreignField: "user_id",
+                            as: "club_academy_detail",
+                        },
+                    },
+                    { $unwind: { path: "$club_academy_detail" } },
+                    {
+                        $group: {
+                            _id: "$send_to.user_id",
+                            club_request: {
+                                $push: {
+                                    $cond: {
+                                        if: {
+                                            $eq: [
+                                                "$club_academy_detail.member_type",
+                                                MEMBER.CLUB,
+                                            ],
+                                        },
+                                        then: "$club_academy_detail",
+                                        else: null,
+                                    },
+                                },
+                            },
+                            academy_request: {
+                                $push: {
+                                    $cond: {
+                                        if: {
+                                            $eq: [
+                                                "$club_academy_detail.member_type",
+                                                MEMBER.ACADEMY,
+                                            ],
+                                        },
+                                        then: "$club_academy_detail",
+                                        else: null,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            user_id: 1,
+                            club_request: {
+                                $size: {
+                                    $filter: {
+                                        input: "$club_request",
+                                        as: "element",
+                                        cond: {
+                                            $ne: ["$$element", null],
+                                        },
+                                    },
+                                },
+                            },
+                            academy_request: {
+                                $size: {
+                                    $filter: {
+                                        input: "$academy_request",
+                                        as: "element",
+                                        cond: {
+                                            $ne: ["$$element", null],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ]);
+            
+                if (footplayer_requests && footplayer_requests.length > 0 && footplayer_requests[0]) {
+                    club_footplayer_requests = footplayer_requests[0].club_request || 0;
+                    academy_footplayer_requests = footplayer_requests[0].academy_request || 0;
+                }
+
+                const video_count = await this.postUtilityInst.countList({
+                    "media.media_type": POST_MEDIA.VIDEO,
+                    "status": POST_STATUS.PUBLISHED,
+                    "is_deleted": false,
+                    "posted_by": requestedData.user_id,
+                });
+
+                let response = {
+                    total_requests: footmate_requests + club_footplayer_requests + academy_footplayer_requests,
+                    footmate_requests: footmate_requests,
+                    club_footplayer_requests: club_footplayer_requests,
+                    academy_footplayer_requests: academy_footplayer_requests,
+                    video_count: video_count,
+                    footmates: footmates,
+                    followers: followers,
+                    followings: followings
+                }
+                return Promise.resolve(response);
+            }
         } catch (e) {
             console.log("Error in getConnectionStats() of ConnectionService", e);
             return Promise.reject(e);

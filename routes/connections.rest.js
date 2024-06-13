@@ -446,7 +446,9 @@ module.exports = (router) => {
      */
     router.get('/connection/stats', checkAuthToken, function (req, res) {
         let serviceInst = new ConnectionService();
+        console.log("request data is=>",req.query)
         let user_id = (req.query && req.query.user_id) ? req.query.user_id : req.authUser.user_id;
+      
         responseHandler(req, res, serviceInst.getConnectionStats({ user_id: user_id }));
     });
 

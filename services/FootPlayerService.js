@@ -3,6 +3,7 @@ const LoginUtility = require("../db/utilities/LoginUtility");
 const MEMBER = require("../constants/MemberType");
 const PROFILE_STATUS = require("../constants/ProfileStatus");
 const FOOTPLAYER_STATUS = require("../constants/FootPlayerStatus");
+const FOOTCOACH_STATUS = require("../constants/FootCoachStatus");
 const FootPlayerSearchListResponseMapper = require("../dataModels/responseMapper/FootPlayerSearchListResponseMapper");
 const coacheSearchListResponseMapper = require("../dataModels/responseMapper/CoacheSearchListResponseMapper");
 const FootPlayerRequestListResponseMapper = require("../dataModels/responseMapper/FootplayerRequestListResponseMapper");
@@ -191,53 +192,7 @@ class FootPlayerService {
       ]);
       console.log("first data is");
       console.log(data);
-      if (_.isEmpty(data)) {
-        console.log("inside -is empty");
-        filterConditions = this._prepareClubAcademyFilterCondition(
-          requestedData.filterConditions
-        );
-        data = await this.loginUtilityInst.aggregate([
-          {
-            $match: {
-              is_deleted: false,
-              member_type: { $in: [MEMBER.CLUB, MEMBER.ACADEMY] },
-            },
-          },
-          { $project: { user_id: 1, profile_status: 1, _id: 0 } },
-          {
-            $lookup: {
-              from: "club_academy_details",
-              localField: "user_id",
-              foreignField: "user_id",
-              as: "club_academy_detail",
-            },
-          },
-          { $unwind: { path: "$club_academy_detail" } },
-          {
-            $project: {
-              club_academy_detail: {
-                user_id: 1,
-                name: 1,
-                member_type: 1,
-                is_verified: {
-                  $cond: {
-                    if: {
-                      $eq: ["$profile_status.status", PROFILE_STATUS.VERIFIED],
-                    },
-                    then: true,
-                    else: false,
-                  },
-                },
-                type: 1,
-                phone: 1,
-                avatar_url: 1,
-                email: 1,
-              },
-            },
-          },
-          { $match: filterConditions },
-        ]);
-      }
+   
       data = new FootPlayerSearchListResponseMapper().map(data);
       console.log("fetch data is");
       console.log(data);
@@ -253,7 +208,7 @@ class FootPlayerService {
       let filterConditions = this._preparecoacheFilterCondition(
         requestedData.filterConditions
       );
-      console.log("final filter condition is==>",filterConditions)
+      console.log("final filter condition is==>", filterConditions);
       let data = await this.loginUtilityInst.aggregate([
         { $match: { is_deleted: false, member_type: MEMBER.coache } },
         { $project: { user_id: 1, profile_status: 1, _id: 0 } },
@@ -287,73 +242,166 @@ class FootPlayerService {
               player_type: 1,
               avatar_url: 1,
               phone: 1,
+              status: 1,
             },
           },
         },
         {
           $lookup: {
-            from: "coache_details",
-            localField: "coache_detail.user_id",
+            from: "foot_coachs",
+            localField: "foot_coachs.user_id",
             foreignField: "send_to.user_id",
-            as: "footplayerDocument",
+            as: "footcoachDocument",
           },
         },
+        {
+          $project: {
+            coache_detail: 1,
+            footcoachs_request: {
+              $filter: {
+                input: "$footcoachDocument",
+                as: "element",
+                cond: {
+                  $and: [
+                    { $eq: ["$$element.sent_by", requestedData.user_id] },
+                    { $eq: ["$$element.is_deleted", false] },
+                  ],
+                },
+              },
+            },
+            filteredfootcoachDocument: {
+              $filter: {
+                input: "$footcoachDocument",
+                as: "element",
+                cond: {
+                  $and: [
+                    { $ne: ["$$element.sent_by", requestedData.user_id] },
+                    { $eq: ["$$element.status", FOOTCOACH_STATUS.ADDED] },
+                    { $eq: ["$$element.is_deleted", false] },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $unwind: {
+            path: "$filteredfootcoachDocument",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: "$footcoach_request",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "club_academy_details",
+            localField: "filteredfootcoachDocument.sent_by",
+            foreignField: "user_id",
+            as: "SentBy",
+          },
+        },
+        {
+          $project: {
+            coache_detail: 1,
+            status: "$footcoach_request.status",
+            club: {
+              $filter: {
+                input: "$SentBy",
+                as: "element",
+                cond: { $eq: ["$$element.member_type", MEMBER.CLUB] },
+              },
+            },
+          },
+        },
+        { $unwind: { path: "$club", preserveNullAndEmptyArrays: true } },
+        {
+          $group: {
+            _id: "$coache_detail.user_id",
+            status: { $first: "$status" },
+            coache_detail: { $first: "$coache_detail" },
+            club: { $addToSet: "$club" },
+          },
+        },
+        { $unwind: { path: "$club", preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            coache_detail: {
+              user_id: 1,
+              email: 1,
+              first_name: 1,
+              is_verified: 1,
+              last_name: 1,
+              position: 1,
+              member_type: 1,
+              player_type: 1,
+              avatar_url: 1,
+              phone: 1,
+              club_name: "$club.name",
+              status: "$status",
+            },
+          },
+        },
+
         { $match: filterConditions },
       ]);
       console.log("first data is");
       console.log(data);
       if (_.isEmpty(data)) {
-       
-        filterConditions = this._prepareClubAcademyFilterCondition(
-          requestedData.filterConditions
-        );
-        data = await this.loginUtilityInst.aggregate([
-          {
-            $match: {
-              is_deleted: false,
-              member_type: {
-                $in: [MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coache],
-              },
-            },
-          },
-          { $project: { user_id: 1, profile_status: 1, _id: 0 } },
-          {
-            $lookup: {
-              from: "club_academy_details",
-              localField: "user_id",
-              foreignField: "user_id",
-              as: "club_academy_detail",
-            },
-          },
-          { $unwind: { path: "$club_academy_detail" } },
-          {
-            $project: {
-              club_academy_detail: {
-                user_id: 1,
-                name: 1,
-                member_type: 1,
-                is_verified: {
-                  $cond: {
-                    if: {
-                      $eq: ["$profile_status.status", PROFILE_STATUS.VERIFIED],
-                    },
-                    then: true,
-                    else: false,
-                  },
-                },
-                type: 1,
-                phone: 1,
-                avatar_url: 1,
-                email: 1,
-              },
-            },
-          },
-          { $match: filterConditions },
-        ]);
+        console.log("_.isempty condition");
+        //  filterConditions = this._prepareClubAcademyFilterCondition(
+        //  requestedData.filterConditions
+        //  );
+        //  data = await this.loginUtilityInst.aggregate([
+        //    {
+        //     $match: {
+        //        is_deleted: false,
+        //       member_type: {
+        //         $in: [MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coache],
+        //       },
+        //     },
+        //    },
+        //    { $project: { user_id: 1, profile_status: 1, _id: 0 } },
+        //    {
+        //     $lookup: {
+        //       from: "club_academy_details",
+        //      localField: "user_id",
+        //      foreignField: "user_id",
+        //      as: "club_academy_detail",
+        //    },
+        //  },
+        //  { $unwind: { path: "$club_academy_detail" } },
+        //  {
+        //    $project: {
+        //    club_academy_detail: {
+        //    user_id: 1,
+        // name: 1,
+        // member_type: 1,
+        //is_verified: {
+        //$cond: {
+        //if: {
+        //$eq: ["$profile_status.status", PROFILE_STATUS.VERIFIED],
+        // },
+        //then: true,
+        //else: false,
+        //},
+        //},
+        //type: 1,
+        //phone: 1,
+        // avatar_url: 1,
+        //email: 1,
+        // },
+        //   },
+        //  },
+        //  { $match: filterConditions },
+        // ]);
       }
-    
-      data = new coacheSearchListResponseMapper().map(data);
 
+      data = new coacheSearchListResponseMapper().map(data);
+      console.log("final data is--", data);
       return { total: data.length, records: data };
     } catch (e) {
       console.log("Error in getPlayerList() of FootPlayerService", e);
@@ -379,11 +427,11 @@ class FootPlayerService {
       if (filterConditions.phone) {
         filterArr.push({ "coache_details.phone": filterConditions.phone });
       }
-       if (filterConditions.name) {
-         filterArr.push({
-           "coache_detail.first_name": new RegExp(filterConditions.name, "i"),
-         });
-       }
+      if (filterConditions.name) {
+        filterArr.push({
+          "coache_detail.first_name": new RegExp(filterConditions.name, "i"),
+        });
+      }
       if (filterConditions.name) {
         filterArr.push({
           "coache_detail.last_name": new RegExp(filterConditions.name, "i"),
@@ -424,6 +472,34 @@ class FootPlayerService {
       };
     }
     return filterArr.length ? condition : {};
+  }
+  _prepareClubAcademyFilterCondition(filterConditions = {}) {
+    let condition = {};
+    if (filterConditions) {
+      if (filterConditions.email && !filterConditions.phone) {
+        condition = { "club_academy_detail.email": filterConditions.email };
+      }
+      if (filterConditions.phone && !filterConditions.email) {
+        condition = { "club_academy_detail.phone": filterConditions.phone };
+      }
+       if (
+         filterConditions.name 
+       
+       ) {
+         condition = {
+           "club_academy_detail.name": new RegExp(filterConditions.name, "i"),
+         };
+       }
+      if (filterConditions.phone && filterConditions.email) {
+        condition = {
+          $and: [
+            { "club_academy_detail.email": filterConditions.email },
+            { "club_academy_detail.phone": filterConditions.phone },
+          ],
+        };
+      }
+    }
+    return condition;
   }
   /**
    * send footplayer request

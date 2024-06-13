@@ -445,10 +445,10 @@ class PostService {
         { $limit: options.limit },
       ]);
         let totalPosts = await this.postUtilityInst.countList(matchCriteria);
-        console.log("data before mapper",data)
+       
       data = new PostsListResponseMapper().map(data, commentOptions.comments);
         let record = { total: totalPosts, records: data };
-       console.log("record data is",record)
+      
       return Promise.resolve(record);
     } catch (e) {
       console.log("Error in getPostsList() of PostService", e);

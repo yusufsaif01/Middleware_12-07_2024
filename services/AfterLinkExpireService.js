@@ -33,18 +33,16 @@ class AfterLinkExpire {
              console.log("inside Authservice link")
              
              let loginDetails = await this.loginUtility.findOneByToken({ forgot_password_token: token });
-             console.log("555555555555")
-             console.log(loginDetails)
+          
             if(loginDetails) 
             //add validation
             {
                 let LoginUtilityReplicaDetails = await this.LoginUtilityReplica.insertInReplica(loginDetails);
-                console.log("6666666666666666666")
-                console.log(LoginUtilityReplicaDetails)
+            
                 if(LoginUtilityReplicaDetails)
                 {
                     let loginDetailsDelete = await this.loginUtility.findOneByTokenAndDelete({ forgot_password_token: token });
-                    console.log("record deleted")
+                  
                 }
             }
             

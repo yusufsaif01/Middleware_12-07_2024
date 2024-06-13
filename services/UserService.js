@@ -375,7 +375,7 @@ class UserService extends BaseService {
             console.log("find one for personal professional is", data)
             return data
           } else if (loginDetails.member_type == MEMBER.coache) {
-            console.log("55555555555555555")
+          
             data = await this.coacheUtilityInst.findOneForCoachProfessional(
               { user_id: user.user_id },
               projection
