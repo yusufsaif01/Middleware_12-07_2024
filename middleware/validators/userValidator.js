@@ -39,10 +39,10 @@ class UserValidator {
       // ),
 
       member_type: Joi.string()
-        .valid(MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coache)
+        .valid(MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coach)
         .required(),
       type: Joi.when("member_type", {
-        is: [MEMBER.PLAYER, MEMBER.coache],
+        is: [MEMBER.PLAYER, MEMBER.coach],
         then: Joi.string().allow(""),
         otherwise: Joi.string()
           .valid(TYPE.RESIDENTIAL, TYPE.NON_RESIDENTIAL)
@@ -50,7 +50,7 @@ class UserValidator {
       }),
 
       name: Joi.when("member_type", {
-        is: [MEMBER.PLAYER, MEMBER.coache],
+        is: [MEMBER.PLAYER, MEMBER.coach],
         then: Joi.string().allow(""),
         otherwise: Joi.string()
           .min(1)
@@ -66,7 +66,7 @@ class UserValidator {
           ),
       }),
       first_name: Joi.when("member_type", {
-        is: [MEMBER.PLAYER, MEMBER.coache],
+        is: [MEMBER.PLAYER, MEMBER.coach],
         then: Joi.string()
           .min(1)
           .required()
@@ -82,7 +82,7 @@ class UserValidator {
         otherwise: Joi.string().allow(""),
       }),
       last_name: Joi.when("member_type", {
-        is: [MEMBER.PLAYER, MEMBER.coache],
+        is: [MEMBER.PLAYER, MEMBER.coach],
         then: Joi.string()
           .min(1)
           .required()
@@ -99,7 +99,7 @@ class UserValidator {
       }),
       email: Joi.string().email({ minDomainSegments: 2 }).required(),
       dob: Joi.when("member_type", {
-        is: [MEMBER.PLAYER, MEMBER.coache],
+        is: [MEMBER.PLAYER, MEMBER.coach],
         then: Joi.date().iso().required().max(moment().format("YYYY-MM-DD")),
         otherwise: Joi.date(),
       }),
@@ -348,7 +348,7 @@ class UserValidator {
           : req.body.last_name;
       }
     }
-    if (member_type === MEMBER.coache) {
+    if (member_type === MEMBER.coach) {
       if (req.params._category === PROFILE_DETAIL.PERSONAL) {
         req.body.first_name = req.body.first_name
           ? req.body.first_name.trim()

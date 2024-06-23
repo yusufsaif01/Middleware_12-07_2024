@@ -20,6 +20,7 @@ const redisServiceInst = require("../redis/RedisService");
 const UtilityService = require("./UtilityService");
 const ProfileStatus = require("../constants/ProfileStatus");
 const OtpService = require("./OtpService");
+
 class AuthService {
   constructor() {
     this.authUtilityInst = new AuthUtility();
@@ -77,7 +78,7 @@ class AuthService {
           { avatar_url: 1 }
         );
         avatarUrl = avatar_url;
-      } else if (loginDetails.member_type === MEMBER.coache) {
+      } else if (loginDetails.member_type === MEMBER.coach) {
         const { avatar_url } = await this.coacheUtilityInst.findOne(
           { user_id: loginDetails.user_id },
           { avatar_url: 1 }
@@ -409,7 +410,10 @@ class AuthService {
       userData.new_password = new_password;
       userData.confirmPassword = confirmPassword;
       axios
-        .post("http://yftchain.local/registration/in/create-password", userData)
+        .post(
+          `${config.app.redirect_domains}/registration/in/create-password`,
+          userData
+        )
         .then(function (response) {
           console.log(response);
         })

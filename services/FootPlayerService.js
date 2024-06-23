@@ -210,7 +210,7 @@ class FootPlayerService {
       );
       console.log("final filter condition is==>", filterConditions);
       let data = await this.loginUtilityInst.aggregate([
-        { $match: { is_deleted: false, member_type: MEMBER.coache } },
+        { $match: { is_deleted: false, member_type: MEMBER.coach } },
         { $project: { user_id: 1, profile_status: 1, _id: 0 } },
         {
           $lookup: {
@@ -238,28 +238,29 @@ class FootPlayerService {
                 },
               },
               position: 1,
-              member_type: MEMBER.coache,
+              member_type: MEMBER.coach,
               player_type: 1,
               avatar_url: 1,
               phone: 1,
               status: 1,
+              current_role: 1,
             },
           },
         },
         {
           $lookup: {
             from: "foot_coachs",
-            localField: "foot_coachs.user_id",
+            localField: "coache_detail.user_id",
             foreignField: "send_to.user_id",
-            as: "footcoachDocument",
+            as: "fcDocument",
           },
         },
         {
           $project: {
             coache_detail: 1,
-            footcoachs_request: {
+            fc_request: {
               $filter: {
-                input: "$footcoachDocument",
+                input: "$fcDocument",
                 as: "element",
                 cond: {
                   $and: [
@@ -271,12 +272,12 @@ class FootPlayerService {
             },
             filteredfootcoachDocument: {
               $filter: {
-                input: "$footcoachDocument",
+                input: "$fcDocument",
                 as: "element",
                 cond: {
                   $and: [
                     { $ne: ["$$element.sent_by", requestedData.user_id] },
-                    { $eq: ["$$element.status", FOOTCOACH_STATUS.ADDED] },
+                    { $eq: ["$$element.status", FOOTPLAYER_STATUS.ADDED] },
                     { $eq: ["$$element.is_deleted", false] },
                   ],
                 },
@@ -292,7 +293,7 @@ class FootPlayerService {
         },
         {
           $unwind: {
-            path: "$footcoach_request",
+            path: "$fc_request",
             preserveNullAndEmptyArrays: true,
           },
         },
@@ -307,7 +308,7 @@ class FootPlayerService {
         {
           $project: {
             coache_detail: 1,
-            status: "$footcoach_request.status",
+            status: "$fc_request.status",
             club: {
               $filter: {
                 input: "$SentBy",
@@ -342,6 +343,7 @@ class FootPlayerService {
               phone: 1,
               club_name: "$club.name",
               status: "$status",
+              current_role: 1,
             },
           },
         },
@@ -399,7 +401,7 @@ class FootPlayerService {
         //  { $match: filterConditions },
         // ]);
       }
-
+console.log("data is ====>",data)
       data = new coacheSearchListResponseMapper().map(data);
       console.log("final data is--", data);
       return { total: data.length, records: data };
@@ -729,7 +731,7 @@ class FootPlayerService {
         {
           user_id: requestedData.send_to,
           // member_type: MEMBER.PLAYER,
-          member_type: MEMBER.coache,
+          member_type: MEMBER.coach,
         },
         { profile_status: 1 }
       );

@@ -23,6 +23,7 @@ const redisServiceInst = require("../redis/RedisService");
 const PROFILE_STATUS = require("../constants/ProfileStatus");
 const PROFILE_DETAIL = require("../constants/ProfileDetailType");
 const axios = require("axios");
+const config = require("../config");
 class UserService extends BaseService {
   constructor() {
     super();
@@ -250,11 +251,13 @@ class UserService extends BaseService {
           { member_type: MEMBER.ACADEMY },
           { member_type: MEMBER.CLUB },
           { member_type: MEMBER.PLAYER },
+          { member_type: MEMBER.coach },
         ],
       };
       let data = await this.loginUtilityInst.aggregate([
         { $match: matchCondition },
         { $project: { user_id: 1, _id: 0 } },
+
         {
           $lookup: {
             from: "club_academy_details",
@@ -276,6 +279,7 @@ class UserService extends BaseService {
             club_academy_detail: clubAcademyProjection,
           },
         },
+
         {
           $lookup: {
             from: "player_details",
@@ -284,6 +288,7 @@ class UserService extends BaseService {
             as: "player_detail",
           },
         },
+
         {
           $unwind: { path: "$player_detail", preserveNullAndEmptyArrays: true },
         },
@@ -304,6 +309,7 @@ class UserService extends BaseService {
             },
           },
         },
+
         { $match: { $or: [clubAcademyConditions, playerConditions] } },
         { $sort: { full_name: 1, clubAcademyNameLowerCase: 1 } },
         {
@@ -315,6 +321,8 @@ class UserService extends BaseService {
       ]);
       let responseData = [],
         totalRecords = 0;
+      console.log("data is=>",data)
+    
       if (data && data.length && data[0] && data[0].data) {
         responseData = new MemberListResponseMapper().map(data[0].data);
         if (
@@ -329,7 +337,75 @@ class UserService extends BaseService {
       let response = { total: totalRecords, records: responseData };
       console.log("final data in response is ==>");
       console.log(response);
-      return response;
+      if (response.total === 0)
+      {
+        console.log("inside iffffffffffff")
+             let data = await this.loginUtilityInst.aggregate([
+               { $match: matchCondition },
+               { $project: { user_id: 1, _id: 0 } },
+               {
+                 $lookup: {
+                   from: "coache_details",
+                   localField: "user_id",
+                   foreignField: "user_id",
+                   as: "player_detail",
+                 },
+               },
+
+               {
+                 $unwind: {
+                   path: "$player_detail",
+                   preserveNullAndEmptyArrays: true,
+                 },
+               },
+               {
+                 $project: {
+                
+                   user_id: 1,
+                   player_detail: playerProjection,
+                   full_name: {
+                     $toLower: {
+                       $concat: [
+                         "$player_detail.first_name",
+                         " ",
+                         "$player_detail.last_name",
+                       ],
+                     },
+                   },
+                 },
+               },
+
+               { $match: { $or: [ playerConditions] } },
+               { $sort: { full_name: 1,  } },
+               {
+                 $facet: {
+                   data: [{ $skip: options.skip }, { $limit: options.limit }],
+                   total_data: [{ $group: { _id: null, count: { $sum: 1 } } }],
+                 },
+               },
+             ]);
+             let responseData = [],
+               totalRecords = 0;
+             console.log("data is=>", data);
+
+             if (data && data.length && data[0] && data[0].data) {
+               responseData = new MemberListResponseMapper().map(data[0].data);
+               if (
+                 data[0].data.length &&
+                 data[0].total_data &&
+                 data[0].total_data.length &&
+                 data[0].total_data[0].count
+               ) {
+                 totalRecords = data[0].total_data[0].count;
+               }
+             }
+             let response = { total: totalRecords, records: responseData };
+             console.log("final data in response is ==>");
+        console.log(response);
+        return response;
+
+      }
+        return response;
     } catch (e) {
       console.log("Error in getMemberList() of UserService", e);
       return Promise.reject(e);
@@ -342,7 +418,7 @@ class UserService extends BaseService {
 
       if (requestedData._category == "personal_details") {
         const axiosrcivedata = await axios.get(
-          `http://yftchain.local/registration/in/profile/:_category/${user.user_id}`
+          `${config.app.redirect_domains}/registration/in/profile/:_category/${user.user_id}`
         );
 
         return axiosrcivedata.data.data;
@@ -374,7 +450,7 @@ class UserService extends BaseService {
             data.player_type = 'player';
             console.log("find one for personal professional is", data)
             return data
-          } else if (loginDetails.member_type == MEMBER.coache) {
+          } else if (loginDetails.member_type == MEMBER.coach) {
           
             data = await this.coacheUtilityInst.findOneForCoachProfessional(
               { user_id: user.user_id },
@@ -471,7 +547,7 @@ class UserService extends BaseService {
   async getPublicProfileDetails(user = {}) {
     try {
       const response = await axios.get(
-        `http://yftchain.local/registration/in/member/public/profile/${user.user_id}/${user.sent_by}`
+        `${config.app.redirect_domains}/registration/in/member/public/profile/${user.user_id}/${user.sent_by}`
       );
       if (!_.isEmpty(response)) {
         return Promise.resolve(response.data.data);

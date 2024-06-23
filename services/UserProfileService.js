@@ -63,7 +63,7 @@ class UserProfileService {
   async updateProfileDetails(requestedData = {}) {
     axios
       .put(
-        "http://yftchain.local/registration/in/update-details/:_category",
+        `${config.app.redirect_domains}/registration/in/update-details/:_category`,
         requestedData
       )
       .then(function (response) {
@@ -420,7 +420,7 @@ class UserProfileService {
         { avatar_url: 1 }
       );
       res.avatar_url = avatar_url;
-    } else if (requestedData.member_type == MEMBER.coache) {
+    } else if (requestedData.member_type == MEMBER.coach) {
       await this.coachUtilityInst.updateOne(
         { user_id: requestedData.id },
         requestedData.updateValues

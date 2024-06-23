@@ -61,11 +61,11 @@ module.exports = {
     },
     member_type: {
       type: String,
-      enum: [MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coache],
+      enum: [MEMBER.PLAYER, MEMBER.CLUB, MEMBER.ACADEMY, MEMBER.coach],
     },
     role: {
       type: String,
-      enum: [ROLE.ADMIN, ROLE.PLAYER, ROLE.CLUB, ROLE.ACADEMY, ROLE.coache],
+      enum: [ROLE.ADMIN, ROLE.PLAYER, ROLE.CLUB, ROLE.ACADEMY, ROLE.coach],
     },
   },
 

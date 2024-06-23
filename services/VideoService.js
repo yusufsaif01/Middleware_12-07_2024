@@ -108,7 +108,7 @@ module.exports = class VideoService {
       [POST_TYPE.LEARNING_OR_TRAINING]: 2,
       [POST_TYPE.MATCH]: 1,
     },
-    [ROLE.coache]: {
+    [ROLE.coach]: {
       [POST_TYPE.TIMELINE]: 10,
     },
   };

@@ -10,6 +10,7 @@ const responseHandler = require("../ResponseHandler");
 const AuthService = require("../services/AuthService");
 const axios = require("axios");
 const OtpService = require("../services/OtpService");
+const config = require("../config");
 module.exports = (router) => {
   /**
    * @api {post} /register register
@@ -247,7 +248,10 @@ module.exports = (router) => {
       // obj.authUser = req.authUser;
       if (true) {
         axios
-          .post("http://yftchain.local/registration/in/create-password", obj)
+          .post(
+            `${config.app.redirect_domains}/registration/in/create-password`,
+            obj
+          )
           .then(function (response) {
             console.log("---------------------");
             console.log(response);

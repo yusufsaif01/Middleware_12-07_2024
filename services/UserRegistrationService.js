@@ -19,6 +19,7 @@ const redisServiceInst = require("../redis/RedisService");
 const FootPlayerUtility = require("../db/utilities/FootPlayerUtility");
 const FOOTPLAYER_STATUS = require("../constants/FootPlayerStatus");
 const moment = require("moment");
+
 const PLAYER_TYPE = require("../constants/PlayerType");
 const {
   EmailClient,
@@ -62,7 +63,7 @@ class UserRegistrationService extends UserService {
   async validateMemberRegistration(registerUser) {
     if (
       registerUser.member_type == MEMBER.PLAYER ||
-      registerUser.member_type == MEMBER.coache
+      registerUser.member_type == MEMBER.coach
     ) {
       if (!registerUser.first_name) {
         return Promise.reject(
@@ -107,7 +108,10 @@ class UserRegistrationService extends UserService {
       if (userData.country_code == "+91") {
         console.log("india");
         axios
-          .post("http://yftchain.local/registration/in/register", userData)
+          .post(
+            `${config.app.redirect_domains}/registration/in/register`,
+            userData
+          )
           .then(function (response) {
             console.log(response);
           })

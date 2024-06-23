@@ -57,7 +57,7 @@ module.exports = (router) => {
   router.get(
     "/footplayer/search",
     checkAuthToken,
-    checkRole([ROLE.CLUB, ROLE.ACADEMY]),
+    checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.coach]),
     footplayerValidator.footplayerSearchQueryValidation,
     function (req, res) {
       filterConditions = {
@@ -82,7 +82,7 @@ module.exports = (router) => {
   router.get(
     "/coache/search",
     checkAuthToken,
-    checkRole([ROLE.CLUB, ROLE.ACADEMY]),
+    checkRole([ROLE.CLUB, ROLE.ACADEMY,ROLE.coach]),
     footplayerValidator.footplayerSearchQueryValidation,
     function (req, res) {
       filterConditions = {
@@ -166,7 +166,7 @@ module.exports = (router) => {
   router.post(
     "/footplayer/request",
     checkAuthToken,
-    checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.coache]),
+    checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.coach]),
     footplayerValidator.footplayerRequestAPIValidation,
     function (req, res) {
       let serviceInst = new FootPlayerService();
@@ -185,7 +185,7 @@ module.exports = (router) => {
   router.post(
     "/coache/request",
     checkAuthToken,
-    checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.coache]),
+    checkRole([ROLE.CLUB, ROLE.ACADEMY, ROLE.coach]),
     footplayerValidator.footplayerRequestAPIValidation,
     function (req, res) {
       let serviceInst = new FootPlayerService();
@@ -242,10 +242,10 @@ module.exports = (router) => {
   router.get(
     "/footplayer/requests",
     checkAuthToken,
-    checkRole([ROLE.PLAYER, ROLE.coache]),
+    checkRole([ROLE.PLAYER, ROLE.coach]),
     footplayerValidator.footplayerRequestListValidation,
     function (req, res) {
-      const role = checkRole([ROLE.PLAYER, ROLE.coache]);
+      const role = checkRole([ROLE.PLAYER, ROLE.coach]);
     
       let paginationOptions = {
         page_no: req.query && req.query.page_no ? req.query.page_no : 1,
@@ -257,7 +257,7 @@ module.exports = (router) => {
           req.query && req.query.requested_by ? req.query.requested_by : null,
       };
       let serviceInst = new FootPlayerService();
-      if (req.authUser.member_type === 'coache')
+      if (req.authUser.member_type === 'coach')
       {
          return responseHandler(
            req,
@@ -288,7 +288,7 @@ module.exports = (router) => {
    router.get(
      "/footplayer/requests",
      checkAuthToken,
-     checkRole([ROLE.PLAYER, ROLE.coache]),
+     checkRole([ROLE.PLAYER, ROLE.coach]),
      footplayerValidator.footplayerRequestListValidation,
      function (req, res) {
        console.log("req is==>",req)
@@ -354,7 +354,7 @@ module.exports = (router) => {
       let serviceInst = new FootPlayerService();
       console.log("reqessss===>", req)
       
-       if (req.authUser.member_type === "coache") {
+       if (req.authUser.member_type === "coach") {
           responseHandler(
             req,
             res,

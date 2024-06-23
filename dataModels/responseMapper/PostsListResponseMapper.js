@@ -119,6 +119,32 @@ class PostsListResponseMapper {
                         }
                         data.posted_by = posted_by;
                     }
+                     if (p.coache_detail) {
+                       let posted_by = {
+                         avatar: p.coache_detail.avatar_url || "-",
+                         user_id: p.coache_detail.user_id,
+                         name:
+                           (p.coache_detail.first_name || "") +
+                           " " +
+                           (p.coache_detail.last_name || ""),
+                         type: p.coache_detail.player_type || "-",
+                         member_type: MEMBER.coach,
+                         position: "-",
+                       };
+                       posted_by.name =
+                         String(posted_by.name).trim().length > 0
+                           ? String(posted_by.name).trim()
+                           : "-";
+                       if (
+                         p.coache_detail.position &&
+                         p.coache_detail.position.length > 0 &&
+                         p.coache_detail.position[0] &&
+                         p.coache_detail.position[0].name
+                       ) {
+                         posted_by.position = p.coache_detail.position[0].name;
+                       }
+                       data.posted_by = posted_by;
+                     }
                     if (p.club_academy_detail) {
                         let posted_by = {
                             "avatar": p.club_academy_detail.avatar_url || "-",

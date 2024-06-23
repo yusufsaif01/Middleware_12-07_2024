@@ -1,19 +1,19 @@
-const PostUtility = require('../db/utilities/PostUtility');
-const RESPONSE_MESSAGE = require('../constants/ResponseMessage');
-const POST_MEDIA = require('../constants/PostMedia');
+const PostUtility = require("../db/utilities/PostUtility");
+const RESPONSE_MESSAGE = require("../constants/ResponseMessage");
+const POST_MEDIA = require("../constants/PostMedia");
 const errors = require("../errors");
-const ConnectionUtility = require('../db/utilities/ConnectionUtility');
-const CommentUtility = require('../db/utilities/CommentUtility');
-const LikeUtility = require('../db/utilities/LikeUtility');
+const ConnectionUtility = require("../db/utilities/ConnectionUtility");
+const CommentUtility = require("../db/utilities/CommentUtility");
+const LikeUtility = require("../db/utilities/LikeUtility");
 const PostsListResponseMapper = require("../dataModels/responseMapper/PostsListResponseMapper");
-const uuidv4 = require('uuid/v4');
-const MEMBER = require('../constants/MemberType');
-const PLAYER = require('../constants/PlayerType');
-const PlayerUtility = require('../db/utilities/PlayerUtility');
+const uuidv4 = require("uuid/v4");
+const MEMBER = require("../constants/MemberType");
+const PLAYER = require("../constants/PlayerType");
+const PlayerUtility = require("../db/utilities/PlayerUtility");
 const CommentsListResponseMapper = require("../dataModels/responseMapper/CommentListResponseMapper");
-const PostStatus = require('../constants/PostStatus');
-const PostType = require('../constants/PostType');
-const VideoService = require('./VideoService');
+const PostStatus = require("../constants/PostStatus");
+const PostType = require("../constants/PostType");
+const VideoService = require("./VideoService");
 
 class PostService {
   constructor() {
@@ -114,13 +114,14 @@ class PostService {
         { user_id: requestedData.user_id },
         { followings: 1 }
       );
+      console.log("connection is=>", connection);
       let user_id_array_for_post = [requestedData.user_id];
       if (connection && connection.followings) {
         user_id_array_for_post = user_id_array_for_post.concat(
           connection.followings
         );
       }
-
+console.log("user idd aree=>",user_id_array_for_post)
       const matchCriteria = {
         posted_by: { $in: user_id_array_for_post },
         is_deleted: false,
@@ -181,7 +182,7 @@ class PostService {
               post_type: "$post_type",
               meta: "$meta",
               created_at: "$created_at",
-              caption:"$caption"
+              caption: "$caption",
             },
             _id: 0,
           },
@@ -374,6 +375,7 @@ class PostService {
             },
           },
         },
+
         {
           $lookup: {
             from: "club_academy_details",
@@ -393,6 +395,7 @@ class PostService {
             post: 1,
             likedByMe: 1,
             likes: 1,
+
             comments: 1,
             club_academy_detail: {
               avatar_url: 1,
@@ -403,6 +406,47 @@ class PostService {
             },
           },
         },
+
+        {
+          $lookup: {
+            from: "coache_details",
+            localField: "post.posted_by",
+            foreignField: "user_id",
+            as: "coache_detail",
+          },
+        },
+        {
+          $unwind: { path: "$coache_detail", preserveNullAndEmptyArrays: true },
+        },
+        {
+          $project: {
+            post: 1,
+            likedByMe: 1,
+            likes: 1,
+            comments: {
+              total: 1,
+              data: {
+                $cond: {
+                  if: { $eq: [commentOptions.comments, 0] },
+                  then: [],
+                  else: "$comments.data",
+                },
+              },
+            },
+
+            club_academy_detail: 1,
+
+            coache_detail: {
+              first_name: 1,
+              last_name: 1,
+              avatar_url: 1,
+              user_id: 1,
+              player_type: 1,
+              position: 1,
+            },
+          },
+        },
+
         {
           $lookup: {
             from: "player_details",
@@ -429,7 +473,9 @@ class PostService {
                 },
               },
             },
+
             club_academy_detail: 1,
+            coache_detail:1,
             player_detail: {
               first_name: 1,
               last_name: 1,
@@ -440,15 +486,17 @@ class PostService {
             },
           },
         },
+
         { $sort: { "post.created_at": -1 } },
         { $skip: options.skip },
         { $limit: options.limit },
       ]);
-        let totalPosts = await this.postUtilityInst.countList(matchCriteria);
-       
+     
+      let totalPosts = await this.postUtilityInst.countList(matchCriteria);
+console.log("data is =>",data)
       data = new PostsListResponseMapper().map(data, commentOptions.comments);
-        let record = { total: totalPosts, records: data };
-      
+      let record = { total: totalPosts, records: data };
+
       return Promise.resolve(record);
     } catch (e) {
       console.log("Error in getPostsList() of PostService", e);

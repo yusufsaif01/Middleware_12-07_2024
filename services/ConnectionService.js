@@ -386,7 +386,7 @@ class ConnectionService {
           });
             const UserT=userType.map(item=>item.member_type).toString()
             console.log("logindetails data issss", UserT);
-            if (UserT === 'coache') {
+            if (UserT === 'coach') {
                 let footplayer_requests =
                     await this.footCoachUtilityInst.aggregate([
                         {

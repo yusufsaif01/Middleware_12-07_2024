@@ -8,8 +8,8 @@ class MemberType {
   static get ACADEMY() {
     return "academy";
   }
-  static get coache() {
-    return "coache";
+  static get coach() {
+    return "coach";
   }
 }
 

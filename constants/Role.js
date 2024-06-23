@@ -5,8 +5,8 @@ class Role {
   static get PLAYER() {
     return "player";
   }
-  static get coache() {
-    return "coache";
+  static get coach() {
+    return "coach";
   }
   static get CLUB() {
     return "club";

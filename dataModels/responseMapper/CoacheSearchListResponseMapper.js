@@ -6,6 +6,7 @@ class coacheSearchListResponseMapper {
         if (member.coache_detail) {
           let data = {
             user_id: member.coache_detail.user_id,
+            current_role:member.coache_detail.current_role,
             avatar: member.coache_detail.avatar_url || "-",
             email: member.coache_detail.email,
             name:
