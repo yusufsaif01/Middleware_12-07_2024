@@ -4,7 +4,7 @@ class ActivityService {
 
 	async  loginActivity(user_id , type) {
 		try {
-console.log("request also come in Activityservice file ****************************")
+
 			const _activityInst = new ActivityUtility();
 			let activity = await _activityInst.insertMany([{
 				user_id: user_id,

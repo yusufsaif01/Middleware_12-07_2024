@@ -403,7 +403,7 @@ class FootPlayerService {
       }
 console.log("data is ====>",data)
       data = new coacheSearchListResponseMapper().map(data);
-      console.log("final data is--", data);
+      
       return { total: data.length, records: data };
     } catch (e) {
       console.log("Error in getPlayerList() of FootPlayerService", e);
@@ -1614,7 +1614,7 @@ console.log("data is ====>",data)
       let response = {};
       if (paramas.filters.footplayers === 1) {
         matchCriteria.status = FOOTPLAYER_STATUS.ADDED;
-        response.footplayers = await this.footPlayerUtilityInst.countList(
+        response.footplayers = await this.footCoachUtilityInst.countList(
           matchCriteria
         );
       }
