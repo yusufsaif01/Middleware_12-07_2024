@@ -127,7 +127,10 @@ class CreateTraningCenterService {
       console.log("inside getcoacheList ===========>");
       console.log("id is", id);
 
-      let data = await this.footCoachUtilityInst.find({ sent_by: id });
+      let data = await this.footCoachUtilityInst.find({
+        sent_by: id,
+        status: "added",
+      });
       return data;
     } catch (e) {
       console.log("Error in getList() of AchievementService", e);

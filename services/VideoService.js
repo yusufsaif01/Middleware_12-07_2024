@@ -33,7 +33,6 @@ module.exports = class VideoService {
 
   async uploadVideo(authUser, type, { tags, media, others, text }) {
 
-      
     try { 
       console.log("inside video upload")
       const totalUpload =  await this.getUploadLimit( authUser.role, type)

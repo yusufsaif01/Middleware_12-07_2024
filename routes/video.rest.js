@@ -249,7 +249,7 @@ module.exports = (router) => {
         others: req.query.others ? req.query.others : null,
         media_type: PostMedia.VIDEO,
       };
-
+console.log("{{{{{{{{{{{}}}}}}}}}}}}}}}")
       responseHandler(
         req,
         res,
@@ -370,7 +370,7 @@ module.exports = (router) => {
         authUser: req.authUser,
         media_type: PostMedia.VIDEO,
       };
-
+console.log("inside videoooooo galleryyyyyyyyy")
       responseHandler(
         req,
         res,
@@ -608,7 +608,7 @@ module.exports = (router) => {
       user_id: req.authUser.user_id,
       media_type: PostMedia.VIDEO,
     };
-
+console.log(":::::::::::::::::::::::::::")
     responseHandler(req, res, postServiceInst.getPost(query));
   });
 

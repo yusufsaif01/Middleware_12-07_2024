@@ -493,10 +493,10 @@ console.log("user idd aree=>",user_id_array_for_post)
       ]);
      
       let totalPosts = await this.postUtilityInst.countList(matchCriteria);
-console.log("data is =>",data)
+
       data = new PostsListResponseMapper().map(data, commentOptions.comments);
       let record = { total: totalPosts, records: data };
-
+console.log("post data isssss =>", record);
       return Promise.resolve(record);
     } catch (e) {
       console.log("Error in getPostsList() of PostService", e);
@@ -568,6 +568,7 @@ console.log("data is =>",data)
               post_type: "$post_type",
               meta: "$meta",
               created_at: "$created_at",
+              caption: "$caption",
             },
             _id: 0,
           },
@@ -829,9 +830,9 @@ console.log("data is =>",data)
       if (data.length == 0) {
         throw new errors.NotFound(RESPONSE_MESSAGE.POST_NOT_FOUND);
       }
-
+console.log("8888888888888",data);
       data = new PostsListResponseMapper().map(data, commentOptions.comments);
-
+      
       return Promise.resolve(data[0]);
     } catch (error) {
       console.log("Error in getting post", error);

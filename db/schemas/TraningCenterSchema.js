@@ -42,9 +42,16 @@ module.exports = {
     coache_name: {
       type: String,
     },
-   opening_days: {
-      type: String
-    },
+    opening_days: [
+      {
+        item_id: {
+          type: Number,
+        },
+        item_text: {
+          type: String,
+        },
+      },
+    ],
     is_deleted: {
       type: Boolean,
       default: false,
