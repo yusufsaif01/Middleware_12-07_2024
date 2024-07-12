@@ -100,12 +100,12 @@ module.exports = class VideoService {
     [ROLE.CLUB]: {
       [POST_TYPE.TIMELINE]: 4,
       [POST_TYPE.LEARNING_OR_TRAINING]: 2,
-      [POST_TYPE.MATCH]: 1,
+      [POST_TYPE.MATCH]: 50,
     },
     [ROLE.ACADEMY]: {
       [POST_TYPE.TIMELINE]: 4,
       [POST_TYPE.LEARNING_OR_TRAINING]: 2,
-      [POST_TYPE.MATCH]: 1,
+      [POST_TYPE.MATCH]: 50,
     },
     [ROLE.coach]: {
       [POST_TYPE.TIMELINE]: 10,

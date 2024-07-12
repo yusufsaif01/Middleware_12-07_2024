@@ -448,7 +448,7 @@ class UserService extends BaseService {
               projection
             );
             data.player_type = 'player';
-            console.log("find one for personal professional is", data)
+           
             return data
           } else if (loginDetails.member_type == MEMBER.coach) {
           

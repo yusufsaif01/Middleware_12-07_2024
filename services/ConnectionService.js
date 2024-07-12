@@ -31,7 +31,9 @@ class ConnectionService {
         try {
             if (!isUsedByAcceptRequestFunc)
                 await this.followMemberValiation(requestedData);
-
+            console.log("Inside followMember list")
+            console.log("first is", requestedData);
+            console.log("Second is", isUsedByAcceptRequestFunc);
             let connection_of_sent_by = await this.connectionUtilityInst.findOne({ user_id: requestedData.sent_by }, { followings: 1 });
             let connection_of_send_to = await this.connectionUtilityInst.findOne({ user_id: requestedData.send_to }, { followers: 1 });
 
@@ -380,7 +382,7 @@ class ConnectionService {
                     followings = connection_of_user.followings.length;
             }
             let club_footplayer_requests = 0, academy_footplayer_requests = 0;
-            console.log("requested data is==>", requestedData);
+            
           const userType = await this.loginUtilityInst.find({
             user_id: requestedData.user_id,
           });

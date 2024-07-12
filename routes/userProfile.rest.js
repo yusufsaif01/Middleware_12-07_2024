@@ -8,6 +8,8 @@ const config = require("../config");
 const STORAGE_PROVIDER_LOCAL = require("../constants/StorageProviderLocal");
 const AVATAR = require("../constants/avatar");
 const axios = require("axios");
+const { BlobServiceClient } = require("@azure/storage-blob");
+const { v1: uuidv1 } = require("uuid");
 module.exports = (router) => {
   /**
    * @api {get} /profile/:_category member profile
@@ -271,7 +273,7 @@ module.exports = (router) => {
         let reqObj = await serviceInst.uploadProfileDocuments(
           req.body,
           req.authUser.user_id,
-          req.files
+         req.files
         );
 
         responseHandler(
@@ -332,18 +334,78 @@ module.exports = (router) => {
     try {
       let serviceInst = new UserProfileService();
       let reqObj = req.body;
-
       if (req.files) {
-        const configForLocal = config.storage;
-        let options = STORAGE_PROVIDER_LOCAL.UPLOAD_OPTIONS;
-        options.allowed_extensions = AVATAR.ALLOWED_MEDIA_EXTENSIONS;
-        let storageProviderInst = new StorageProvider(configForLocal);
+        // const configForLocal = config.storage;
+        // let options = STORAGE_PROVIDER_LOCAL.UPLOAD_OPTIONS;
+        // options.allowed_extensions = AVATAR.ALLOWED_MEDIA_EXTENSIONS;
+        // let storageProviderInst = new StorageProvider(configForLocal);
+        // if (req.files.avatar) {
+        //   let uploadResponse = await storageProviderInst.uploadDocument(
+        //     req.files.avatar,
+        //    options
+        //   );
+        //  reqObj.avatar_url = uploadResponse.url;
+        //  }
+
         if (req.files.avatar) {
-          let uploadResponse = await storageProviderInst.uploadDocument(
-            req.files.avatar,
-            options
+          console.log("inside req.files.media");
+          const AZURE_STORAGE_CONNECTION_STRING =
+            "DefaultEndpointsProtocol=https;AccountName=dytstorage;AccountKey=adrbqNi3IgyuPDfiJVOGg9cw/X9RqaPeoJz9o2+/n292oWxMP43zgHvSL5X0BBWoaukwuq0Zqayk+AStsbnsBg==;EndpointSuffix=core.windows.net";
+
+          if (!AZURE_STORAGE_CONNECTION_STRING) {
+            throw Error("Azure Storage Connection string not found");
+          }
+
+          // Create the BlobServiceClient object with connection string
+          const blobServiceClient = BlobServiceClient.fromConnectionString(
+            AZURE_STORAGE_CONNECTION_STRING
           );
-          reqObj.avatar_url = uploadResponse.url;
+
+          // Create a unique name for the container
+          const containerName = "dytimagescontainer";
+
+          let i = 1;
+          let containers = blobServiceClient.listContainers();
+          for await (const container of containers) {
+            if (container.name === "dytimagescontainer") {
+              // Create a unique name for the blob
+              const blobName = "quickstart" + uuidv1();
+              const containerClient =
+                blobServiceClient.getContainerClient(containerName);
+              // Get a block blob client
+              const blockBlobClient =
+                containerClient.getBlockBlobClient(blobName);
+
+              // Upload data to the blob
+              console.log(req.files.avatar);
+              const uploadBlobResponse = await blockBlobClient.uploadFile(
+                req.files.avatar.tempFilePath
+              );
+
+              reqObj.avatar_url = `https://dytstorage.blob.core.windows.net/dytimagescontainer/${blobName}`;
+            } else {
+              // Get a reference to a container
+              const containerClient =
+                blobServiceClient.getContainerClient(containerName);
+              // Create the container
+              const createContainerResponse = await containerClient.create();
+
+              // Create a unique name for the blob
+              const blobName = "quickstart" + uuidv1();
+
+              // Get a block blob client
+              const blockBlobClient =
+                containerClient.getBlockBlobClient(blobName);
+
+              // Upload data to the blob
+
+              const uploadBlobResponse = await blockBlobClient.uploadFile(
+                req.files.avatar.tempFilePath
+              );
+
+              reqObj.avatar_url = `https://dytstorage.blob.core.windows.net/dytimagescontainer/${blobName}`;
+            }
+          }
         }
       }
       responseHandler(

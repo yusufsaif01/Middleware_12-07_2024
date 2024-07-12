@@ -691,7 +691,8 @@ class UserProfileService {
 
       if (reqObj.position) {
         try {
-          let position = JSON.parse(reqObj.position);
+          console.log(reqObj.position)
+          let position = JSON.parse(JSON.stringify(reqObj.position));
           reqObj.position = position;
         } catch (e) {
           console.log(e);

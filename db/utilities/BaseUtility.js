@@ -173,7 +173,7 @@ class BaseUtility {
         await this.getModel();
       }
       conditions.deleted_at = { $exists: false };
-
+      console.log("conditions is=>",conditions)
       let result = await this.model.updateOne(conditions, updatedDoc, options);
       console.log("request inside updateOneee");
       console.log(result);
@@ -288,7 +288,7 @@ class BaseUtility {
       let result = await this.model.findOne(conditions);
       
       Object.assign({member_type : 'player' });
-      console.log("result isssss for personal professional", result);
+     
       return result;
     } catch (e) {
       console.log(
@@ -311,7 +311,6 @@ class BaseUtility {
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
       let result = await this.model.findOne(conditions);
 
-      console.log("result isssss", result);
       return result;
     } catch (e) {
       console.log(
@@ -330,8 +329,6 @@ class BaseUtility {
       conditions.deleted_at = { $exists: false };
       projection = !_.isEmpty(projection) ? projection : { _id: 0, __v: 0 };
       let result = await this.model.findOne(conditions, projection, options);
-
-      console.log("result isssss", result);
       return result;
     } catch (e) {
       console.log(
